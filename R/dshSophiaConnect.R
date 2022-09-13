@@ -21,7 +21,7 @@
 #' dshSophiaConnect(exclude = c("node3", "node4"))
 #' }
 #' @export
-#' @import DSOpal
+#' @import DSI DSOpal opalr
 #' @importFrom utils download.file read.csv
 dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
                              password = Sys.getenv("fdb_password"),
