@@ -1,0 +1,40 @@
+#' Load database resources 
+#'
+#' Loads all database resources on federated nodes. 
+#' @return Nothing, all databases are loaded locally.
+#' @examples
+#' \dontrun{
+#' # first we must connect to the federated system
+#' dshSophiaConnect()
+#'
+#' # now we can load database resources
+#' dshSophiaLoad()
+#' }
+#' @export
+#' @importFrom utils menu 
+dshSophiaLoad <- function() {
+
+    # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
+    # the user probably did not run dshSophiaConnect() yet. Here the user may do so, after 
+    # being promted for username and password.
+    if (exists("opals") == FALSE || exists("nodes_and_cohorts") == FALSE) {
+        cat("")
+        cat("No 'opals' and/or 'nodes_and_cohorts' object found\n")
+        cat("You probably did not run 'dshSophiaConnect' yet, do you wish to do that now?\n")
+        switch(menu(c("Yes", "No (abort)")) + 1,
+               cat("Test"), 
+               dshSophiaPrompt(),
+               stop("Aborting..."))
+    }
+
+    # now connect to each cohort individually
+    for (i in 1:nrow(nodes_and_cohorts)) {
+        tmp <- nodes_and_cohorts[i, ]
+        this_opal <- paste0(tmp$node, "_", tmp$name)
+        this_project <- tmp$name
+        res <- opalr::opal.resources(opals[[this_opal]]@opal, this_project)
+        qualified_res_name <- paste0(this_project, '.', res$name)
+        symbol_name <- paste0(this_project, '_', res$name)
+        DSI::datashield.assign.resource(opals[this_opal], symbol_name, qualified_res_name)
+    }
+}

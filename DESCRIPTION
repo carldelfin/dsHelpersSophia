@@ -1,0 +1,29 @@
+Package: dsHelpersSophia
+Title: Helper functions for use with the SOPHIA federated database 
+Version: 0.0.0.9000
+Authors@R: 
+    person("Carl", 
+           "Delfin",
+           email = "crdf@novonordisk.com", 
+           role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0003-4827-7650"))
+Description: This package provides a series of helper functions intended to make
+    it easier to work with the SOPHIA federated database. By installing this package, 
+    the user will also (via dependencies) have installed everything installed 
+    required to connect to and work with the federated database. 
+URL: https://github.com/carldelfin/dsHelpersSophia, https://imisophia.eu/, https://www.datashield.org/
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.1.9000
+Imports:
+    dplyr,
+    magrittr,
+    DSI,
+    DSOpal,
+    opalr,
+    VIM
+Remotes:
+    sib-swiss/dsSwissKnifeClient,
+    sib-swiss/dsQueryLibrary,
+    datashield/dsBaseClient
