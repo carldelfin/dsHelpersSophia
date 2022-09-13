@@ -10,9 +10,11 @@
 #' # now we can load database resources
 #' dshSophiaLoad()
 #' }
-#' @export
-#' @import DSI DSOpal opalr
+#' @import DSI
+#' @import DSOpal 
+#' @import opalr
 #' @importFrom utils menu 
+#' @export
 dshSophiaLoad <- function() {
 
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
