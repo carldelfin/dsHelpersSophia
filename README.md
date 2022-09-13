@@ -1,3 +1,10 @@
 ## dsSophiaHelpers
 
-Test.
+### Dependencies
+
+#### Linux
+
+`cmake`
+
+
+

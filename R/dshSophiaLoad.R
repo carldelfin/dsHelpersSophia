@@ -11,6 +11,7 @@
 #' dshSophiaLoad()
 #' }
 #' @export
+#' @import DSOpal
 #' @importFrom utils menu 
 dshSophiaLoad <- function() {
 

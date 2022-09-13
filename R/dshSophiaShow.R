@@ -15,6 +15,7 @@
 #' dshSophiaShow(username = "user1", password = "pass1")
 #' }
 #' @export
+#' @import DSOpal
 #' @importFrom utils download.file read.csv
 dshSophiaShow <- function(username = Sys.getenv("fdb_user"),
                           password = Sys.getenv("fdb_password")) {
