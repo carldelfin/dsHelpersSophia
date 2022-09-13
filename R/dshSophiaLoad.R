@@ -4,10 +4,10 @@
 #' @return Nothing, all databases are loaded locally.
 #' @examples
 #' \dontrun{
-#' # first we must connect to the federated system
+#' # first connect to the federated system
 #' dshSophiaConnect()
 #'
-#' # now we can load database resources
+#' # then load database resources
 #' dshSophiaLoad()
 #' }
 #' @import DSOpal opalr httr DSI
@@ -31,11 +31,11 @@ dshSophiaLoad <- function() {
     # now connect to each cohort individually
     for (i in 1:nrow(nodes_and_cohorts)) {
         tmp <- nodes_and_cohorts[i, ]
-        this_opal <- paste0(tmp$node, "_", tmp$name)
-        this_project <- tmp$name
+        this_opal <- paste0(tmp$node_name, "_", tmp$name)
+        this_project <- tmp$name_name
         res <- opalr::opal.resources(opals[[this_opal]]@opal, this_project)
-        qualified_res_name <- paste0(this_project, '.', res$name)
-        symbol_name <- paste0(this_project, '_', res$name)
+        qualified_res_name <- paste0(this_project, ".", res$name)
+        symbol_name <- paste0(this_project, "_", res$name)
         DSI::datashield.assign.resource(opals[this_opal], symbol_name, qualified_res_name)
     }
 }

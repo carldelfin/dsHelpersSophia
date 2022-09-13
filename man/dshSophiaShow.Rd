@@ -15,7 +15,7 @@ dshSophiaShow(
 \item{password}{A character, your password. Defaults to \code{Sys.getenv("fdb_password")}.}
 }
 \value{
-A dataframe with all available nodes and cohorts in 'long' format.
+A dataframe with all available nodes and cohorts in 'long' format, along with date if creation and last update.
 }
 \description{
 Downloads an up-to-date .csv file from SIB containing node status and URL, then

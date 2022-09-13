@@ -5,7 +5,7 @@
 #' is a dataframe containing all available nodes and cohorts.
 #' @param username A character, your username. Defaults to `Sys.getenv("fdb_user")`.
 #' @param password A character, your password. Defaults to `Sys.getenv("fdb_password")`.
-#' @return A dataframe with all available nodes and cohorts in 'long' format.
+#' @return A dataframe with all available nodes and cohorts in 'long' format, along with date if creation and last update.
 #' @examples
 #' \dontrun{
 #' # show all nodes and cohorts, assuming username and password is specified in .Renvironment:
@@ -19,16 +19,16 @@
 #' @export
 dshSophiaShow <- function(username = Sys.getenv("fdb_user"),
                           password = Sys.getenv("fdb_password")) {
+    
     available_nodes <- tempfile() 
     download.file("https://sophia-fdb.vital-it.ch/nodes/status.csv", available_nodes)
-    available_nodes <- read.csv(available_nodes) %>%
-        dplyr::rename(url = X, error_code = errcodes) %>%
-        dplyr::mutate(node = trimws(url, whitespace = ".*\\/")) %>%
-        dplyr::select(node, url, error_code)
+    available_nodes <- read.csv(available_nodes) 
+    available_nodes$node_name <- trimws(available_nodes$X, whitespace = ".*\\/")
+    colnames(available_nodes) <- c("url", "error_code", "node_name")
     
     builder <- DSI::newDSLoginBuilder()
     for (i in 1:nrow(available_nodes)) {
-        builder$append(server = available_nodes[i, "node"],
+        builder$append(server = available_nodes[i, "node_name"],
                        url = available_nodes[i, "url"],
                        user = username,
                        password = password,
@@ -47,21 +47,18 @@ dshSophiaShow <- function(username = Sys.getenv("fdb_user"),
     projects <- sapply(opals, function(x) opalr::opal.projects(x@opal),
                        simplify = FALSE)
     projects <- sapply(names(projects), 
-                        function(x) {
-                            return(projects[[x]][!(projects[[x]]$name %in% 
-                                                   c("sophia", "omop_test", "a_test")), ,
-                                   drop = FALSE])},
-                        simplify = FALSE)
+        function(x) { return(projects[[x]][!(projects[[x]]$name %in% c("sophia", "omop_test", "a_test")), , drop = FALSE])
+    }, simplify = FALSE)
 
     # create a dataframe in long format with all cohorts (projects)
-    # corresponding to each node
-    nodes_and_cohorts <- dplyr::bind_rows(projects, .id = "node") 
+    # corresponding to each node; note that this is assigned to the 
+    # Global environment for use by `dshSophiaLoad()`
+    nodes_and_cohorts <<- do.call("rbind", projects)[, c(1, 4:5)]
+    nodes_and_cohorts$node_name <- gsub("\\..*", "", rownames(nodes_and_cohorts))
 
     # return merged and cleaned results
-    out <- merge(nodes_and_cohorts, available_nodes, by = "node", all = TRUE)  %>% 
-        dplyr::rename(cohort = name) %>% 
-        dplyr::select(node, cohort) %>%
-        as.data.frame()
+    out <- merge(nodes_and_cohorts, available_nodes, by = "node_name", all = TRUE)[, c(1:4)]
+    colnames(out) <- c("node", "cohort", "created", "last_updated")
 
     return(out)
 }

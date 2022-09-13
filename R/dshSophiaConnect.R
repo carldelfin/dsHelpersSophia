@@ -30,15 +30,14 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
 
     available_nodes <- tempfile() 
     download.file("https://sophia-fdb.vital-it.ch/nodes/status.csv", available_nodes)
-    available_nodes <- read.csv(available_nodes) %>%
-        dplyr::rename(url = X, error_code = errcodes) %>%
-        dplyr::mutate(node_name = trimws(url, whitespace = ".*\\/")) %>%
-        dplyr::select(node_name, url, error_code)
+    available_nodes <- read.csv(available_nodes) 
+    available_nodes$node_name <- trimws(available_nodes$X, whitespace = ".*\\/")
+    colnames(available_nodes) <- c("url", "error_code", "node_name")
 
     if (!is.null(include)) { 
-        available_nodes <- available_nodes %>% dplyr::filter(node_name %in% include) 
+        available_nodes <- subset(available_nodes, node_name %in% include)
     } else if (!is.null(exclude)) {
-        available_nodes <- available_nodes %>% dplyr::filter(!node_name %in% exclude) 
+        available_nodes <- subset(available_nodes, !node_name %in% exclude)
     }
     
     builder <- DSI::newDSLoginBuilder()
@@ -59,18 +58,16 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
     )
     
     # get list of all available projects (cohorts)
-    projects <- sapply(opals, function(x) opalr::opal.projects(x@opal),
-                        simplify = FALSE)
-    projects <- sapply(names(projects), 
-                        function(x) {
-                            return(projects[[x]][!(projects[[x]]$name %in% 
-                                                   c("sophia", "omop_test", "a_test")), ,
-                                   drop = FALSE])},
-                        simplify = FALSE)
+    projects <- sapply(opals, function(x) opalr::opal.projects(x@opal), simplify = FALSE)
+    projects <- sapply(names(projects), function(x) {
+        return(projects[[x]][!(projects[[x]]$name %in% c("sophia", "omop_test", "a_test")), , drop = FALSE])
+    }, simplify = FALSE)
 
     # create a dataframe in long format with all cohorts (projects)
-    # corresponding to each node
-    nodes_and_cohorts <- dplyr::bind_rows(projects, .id = "node") 
+    # corresponding to each node; note that this is assigned to the 
+    # Global environment for use by `dshSophiaLoad()`
+    nodes_and_cohorts <<- do.call("rbind", projects)[, c(1, 4:5)]
+    nodes_and_cohorts$node_name <- gsub("\\..*", "", rownames(nodes_and_cohorts2))
 
     # log out and create a new builder, so that we can connect to each cohort separately
     DSI::datashield.logout(opals)
@@ -78,8 +75,8 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
     
     for (i in 1:nrow(nodes_and_cohorts)) {
         tmp <- nodes_and_cohorts[i, ]
-        server_short <- tmp$node
-        server_name <- paste0(tmp$node, "_", tmp$name)
+        server_short <- tmp$node_name
+        server_name <- paste0(tmp$node_name, "_", tmp$name)
         builder$append(server = server_name,
                        url = paste0("https://sophia-fdb.vital-it.ch/", server_short),
                        user = username,
