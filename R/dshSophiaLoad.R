@@ -10,7 +10,7 @@
 #' # now we can load database resources
 #' dshSophiaLoad()
 #' }
-#' @import DSOpal opalr httr DSI progress R6 
+#' @import DSOpal opalr httr DSI
 #' @importFrom utils menu 
 #' @export
 dshSophiaLoad <- function() {

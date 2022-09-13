@@ -19,6 +19,7 @@ RoxygenNote: 7.2.1.9000
 Imports:
     dplyr,
     magrittr,
+    httr,
     DSI,
     DSOpal,
     opalr,

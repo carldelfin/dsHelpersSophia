@@ -20,7 +20,7 @@
 #' # exclude specific nodes:
 #' dshSophiaConnect(exclude = c("node3", "node4"))
 #' }
-#' @import DSOpal opalr httr DSI progress R6 
+#' @import DSOpal opalr httr DSI
 #' @importFrom utils download.file read.csv
 #' @export
 dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
