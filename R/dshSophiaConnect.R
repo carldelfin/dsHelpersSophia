@@ -20,7 +20,7 @@
 #' # exclude specific nodes:
 #' dshSophiaConnect(exclude = c("node3", "node4"))
 #' }
-#' @import DSOpal 
+#' @import DSOpal opalr httr DSI progress R6 
 #' @importFrom utils download.file read.csv
 #' @export
 dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
@@ -59,9 +59,9 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
     )
     
     # get list of all available projects (cohorts)
-    projects <<- sapply(opals, function(x) opalr::opal.projects(x@opal),
+    projects <- sapply(opals, function(x) opalr::opal.projects(x@opal),
                         simplify = FALSE)
-    projects <<- sapply(names(projects), 
+    projects <- sapply(names(projects), 
                         function(x) {
                             return(projects[[x]][!(projects[[x]]$name %in% 
                                                    c("sophia", "omop_test", "a_test")), ,
@@ -70,7 +70,7 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
 
     # create a dataframe in long format with all cohorts (projects)
     # corresponding to each node
-    nodes_and_cohorts <<- dplyr::bind_rows(projects, .id = "node") 
+    nodes_and_cohorts <- dplyr::bind_rows(projects, .id = "node") 
 
     # log out and create a new builder, so that we can connect to each cohort separately
     DSI::datashield.logout(opals)

@@ -14,12 +14,9 @@
 #' # show all nodes and cohorts, manually providing username and password:
 #' dshSophiaShow(username = "user1", password = "pass1")
 #' }
-#' @import DSI
-#' @import DSOpal 
-#' @import opalr
-#' @importFrom utils menu 
-#' @export
+#' @import DSOpal opalr httr DSI progress R6 
 #' @importFrom utils download.file read.csv
+#' @export
 dshSophiaShow <- function(username = Sys.getenv("fdb_user"),
                           password = Sys.getenv("fdb_password")) {
     available_nodes <- tempfile() 
