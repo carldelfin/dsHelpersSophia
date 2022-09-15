@@ -49,25 +49,25 @@ This function allows the user to connect to the SOPHIA federated database, with 
 
 Connecting to the federated database is a two-step process: First, the user connects to each individual *node* in order to retrieve a list of all cohorts that are hosted on that specific node (cohorts in this context refer to a specific dataset associated with a study or research project). Then, the user is disconnected, and then reconnects to each individual *cohort*. Note that some nodes only host a single cohort.
 
-Connect to all nodes, assuming user credentials are available in `.Renviron`:
+#### Connect to all nodes, assuming user credentials are available in `.Renviron`:
 
 ```R
 dshSophiaConnect()
 ```
 
-Connect to all nodes, manually providing credentials:
+#### Connect to all nodes, manually providing credentials:
 
 ```R
 dshSophiaConnect(username = "username", password = "password")
 ```
 
-Connect to specific nodes:
+#### Connect to specific nodes:
 
 ```R
 dshSophiaConnect(include = c("node1", "node2"))
 ```
 
-Omit specific nodes:
+#### Omit specific nodes:
 
 ```R
 dshSophiaConnect(exclude = c("node1", "node2"))
