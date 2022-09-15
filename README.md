@@ -1,6 +1,6 @@
-## dsHelpersSophia
-
 ![sophialogo](https://www.imi.europa.eu/sites/default/files/projects/logos/SOPHIA_logo.png)
+
+# dsHelpersSophia
 
 This package provides a series of helper functions intended to make it easier to work with the SOPHIA federated database. The goal is to lower the barrier of entry by (1) having the user install a single package that in turn makes sure that all other required packages are installed, and (2) providing functions for easy access to the federated database and its resources. 
 
