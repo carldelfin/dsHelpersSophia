@@ -21,8 +21,11 @@ Imports:
     DSI,
     DSOpal,
     opalr,
-    VIM
+    VIM,
+    dsBaseClient,
+    dsSwissKnifeClient,
+    dsQueryLibrary
 Remotes:
+    datashield/dsBaseClient,
     sib-swiss/dsSwissKnifeClient,
-    sib-swiss/dsQueryLibrary,
-    datashield/dsBaseClient
+    sib-swiss/dsQueryLibrary
