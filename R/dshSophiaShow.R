@@ -1,14 +1,14 @@
 #' Show available nodes and cohorts 
 #'
 #' Downloads an up-to-date .csv file from SIB containing node status and URL, then
-#' via a two-step process logs in to each node to retrive cohort names. The output
+#' via a two-step process logs in to each node to retrieve cohort names. The output
 #' is a dataframe containing all available nodes and cohorts.
 #' @param username A character, your username. Defaults to `Sys.getenv("fdb_user")`.
 #' @param password A character, your password. Defaults to `Sys.getenv("fdb_password")`.
-#' @return A dataframe with all available nodes and cohorts in 'long' format, along with date if creation and last update.
+#' @return A data frame with all available nodes and cohorts in 'long' format, along with date if creation and last update.
 #' @examples
 #' \dontrun{
-#' # show all nodes and cohorts, assuming username and password is specified in .Renvironment:
+#' # show all nodes and cohorts, assuming username and password is specified in .Renviron:
 #' dshSophiaShow()
 #'
 #' # show all nodes and cohorts, manually providing username and password:
@@ -40,7 +40,7 @@ dshSophiaShow <- function(username = Sys.getenv("fdb_user"),
     # this will overwrite any existing opals object
     tryCatch(
         expr = { opals <<- DSI::datashield.login(logins = builder$build()) },
-        error = function(e) { message("\nUnable to log in, please check your credentials!") }
+        error = function(e) { message("\nUnable to connect, please check your credentials!") }
     )
 
     # get list of all available projects (cohorts)

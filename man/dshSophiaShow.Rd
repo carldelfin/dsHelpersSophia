@@ -15,16 +15,16 @@ dshSophiaShow(
 \item{password}{A character, your password. Defaults to \code{Sys.getenv("fdb_password")}.}
 }
 \value{
-A dataframe with all available nodes and cohorts in 'long' format, along with date if creation and last update.
+A data frame with all available nodes and cohorts in 'long' format, along with date if creation and last update.
 }
 \description{
 Downloads an up-to-date .csv file from SIB containing node status and URL, then
-via a two-step process logs in to each node to retrive cohort names. The output
+via a two-step process logs in to each node to retrieve cohort names. The output
 is a dataframe containing all available nodes and cohorts.
 }
 \examples{
 \dontrun{
-# show all nodes and cohorts, assuming username and password is specified in .Renvironment:
+# show all nodes and cohorts, assuming username and password is specified in .Renviron:
 dshSophiaShow()
 
 # show all nodes and cohorts, manually providing username and password:
