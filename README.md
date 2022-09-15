@@ -1,24 +1,24 @@
 ## dsHelpersSophia
 
-### 
+![sophialogo](https://www.imi.europa.eu/sites/default/files/projects/logos/SOPHIA_logo.png)
 
-### R package dependencies
+## Installation 
 
-### System dependencies
+Using [devtools](https://devtools.r-lib.org/): `devtools::install_github("carldelfin/dsHelpersSophia")`
 
-#### Linux (Ubuntu 20.04.1)
+Using [remotes](https://remotes.r-lib.org/): `remotes::install_github("carldelfin/dsHelpersSophia")`
 
-These must be installed prior to installing `dsHelpersSophia`:
+For Windows users, that should be enough. For Linux users, some system packages are required. On a Debian-based system, install using:
 
-`r-base`
+```bash
+sudo apt install -y libxml2-dev libcurl4-openssl-dev libssl-dev libfontconfig1-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev cmake
+```
 
-For devtools:
+Adapt accordingly for non-Debian Linux flavours.
 
-`sudo apt install -y libxml2-dev libcurl4-openssl-dev libssl-dev libfontconfig1-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev`
+## Use
 
-Then ds
 
-* [cmake](https://cmake.org/https://cmake.org/)
 
 
 
