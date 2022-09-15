@@ -14,10 +14,10 @@ Loads all database resources on federated nodes.
 }
 \examples{
 \dontrun{
-# first we must connect to the federated system
+# first connect to the federated system
 dshSophiaConnect()
 
-# now we can load database resources
+# then load database resources
 dshSophiaLoad()
 }
 }

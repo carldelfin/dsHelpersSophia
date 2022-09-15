@@ -66,8 +66,9 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
     # create a dataframe in long format with all cohorts (projects)
     # corresponding to each node; note that this is assigned to the 
     # Global environment for use by `dshSophiaLoad()`
-    nodes_and_cohorts <<- do.call("rbind", projects)[, c(1, 4:5)]
-    nodes_and_cohorts$node_name <- gsub("\\..*", "", rownames(nodes_and_cohorts2))
+    nodes_and_cohorts <- do.call("rbind", projects)[, c(1, 4:5)]
+    nodes_and_cohorts$node_name <- gsub("\\..*", "", rownames(nodes_and_cohorts))
+    nodes_and_cohorts <<- nodes_and_cohorts
 
     # log out and create a new builder, so that we can connect to each cohort separately
     DSI::datashield.logout(opals)

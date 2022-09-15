@@ -32,7 +32,7 @@ dshSophiaLoad <- function() {
     for (i in 1:nrow(nodes_and_cohorts)) {
         tmp <- nodes_and_cohorts[i, ]
         this_opal <- paste0(tmp$node_name, "_", tmp$name)
-        this_project <- tmp$name_name
+        this_project <- tmp$name
         res <- opalr::opal.resources(opals[[this_opal]]@opal, this_project)
         qualified_res_name <- paste0(this_project, ".", res$name)
         symbol_name <- paste0(this_project, "_", res$name)
