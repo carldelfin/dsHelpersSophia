@@ -21,15 +21,54 @@ sudo apt install -y cmake libxml2-dev libcurl4-openssl-dev libssl-dev libfontcon
 
 Adapt accordingly for non-Debian Linux flavours.
 
-Several additional R packages are installed via dependencies. The following three are the most important:
+Several additional R packages are installed via dependencies. The following are the most important:
 
+* [DSI](https://datashield.github.io/DSI/)
 * [dsBaseClient](https://github.com/datashield/dsBaseClient)
 * [dsSwissKnifeClient](https://github.com/sib-swiss/dsSwissKnifeClient)
 * [dsQueryLibrary](https://github.com/sib-swiss/dsQueryLibrary)
 
-## Use
+## Usage
 
+### Keeping credentials in the .Renviron file
 
+It is never a good idea to keep sensitive credentials such as login information in R scripts. Although it is possible to enter credentials manually (see `dshSophiaPromt`), it is usually more convenient to store them in an environment file. Basically, an environment file is list of variables that are automatically read when you start your R session. 
 
+Thus, for a more streamlined experience, most functions in `dsHelpersSophia` will look for user credentials in the `.Renviron` file. If you don't already have one, you can either create it manually (R will look for it in the current user's home directory, which on Linux would be `~/.Renviron` and on Windows `C:\Users\USERNAME\Documents\.Renviron`) or use the [usethis](https://usethis.r-lib.org/) package: `usethis::edit_r_environ()`.
 
+Enter your credentials like this:
 
+```bash
+fdb_user="username"
+fdb_password="password"
+```
+
+### dshSophiaConnect
+
+This function allows the user to connect to the SOPHIA federated database, with the option of including and excluding specific nodes (a node in this context is a server that hosts a database). 
+
+Connecting to the federated database is a two-step process: First, the user connects to each individual *node* in order to retrieve a list of all cohorts that are hosted on that specific node (cohorts in this context refer to a specific dataset associated with a study or research project). Then, the user is disconnected, and then reconnects to each individual *cohort*. Note that some nodes only host a single cohort.
+
+Connect to all nodes, assuming user credentials are available in `.Renviron`:
+
+```R
+dshSophiaConnect()
+```
+
+Connect to all nodes, manually providing credentials:
+
+```R
+dshSophiaConnect(username = "username", password = "password")
+```
+
+Connect to specific nodes:
+
+```R
+dshSophiaConnect(include = c("node1", "node2"))
+```
+
+Omit specific nodes:
+
+```R
+dshSophiaConnect(exclude = c("node1", "node2"))
+```

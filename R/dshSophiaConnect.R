@@ -1,6 +1,6 @@
 #' Connect to SOPHIA nodes 
 #'
-#' Allows the user to connect to the federated SOPHIA nodes, with the option of including and excluding specific nodes. Note that there are two rounds of connecting: First the user connects to each node in order to retrieve a list of all cohorts included at each node. Then, the user connects to each cohort separately. 
+#' Allows the user to connect to the SOPHIA federated database, with the option of including and excluding specific nodes (a node in this context is a server that hosts a database). Note that connecting to the federated database is a two-step process: First, the user connects to each individual node in order to retrieve a list of all cohorts that are hosted on that specific node (cohorts in this context refer to a specific dataset associated with a study or research project). Then, the user is disconnected, and then reconnects to each individual cohort.
 #' @param username A character; your username. Defaults to `Sys.getenv("fdb_user")`.
 #' @param password A character; your password. Defaults to `Sys.getenv("fdb_password")`.
 #' @param include A character or vector of characters containing only the nodes you want to connect to. 
@@ -8,11 +8,11 @@
 #' @return An Opals object (`opals`) is assigned to the Global environment.
 #' @examples
 #' \dontrun{
-#' # connect to all nodes, assuming username and password is specified in .Renvironment:
+#' # connect to all nodes, assuming username and password is specified in .Renviron:
 #' dshSophiaConnect()
 #'
 #' # connect to all nodes, manually providing username and password:
-#' dshSophiaConnect(username = "user1", password = "pass1")
+#' dshSophiaConnect(username = "username", password = "password")
 #'
 #' # include specific nodes:
 #' dshSophiaConnect(include = c("node1", "node2"))
