@@ -23,6 +23,8 @@ Imports:
     DSOpal,
     opalr,
     VIM,
+    rrapply,
+    purrr,
     dsBaseClient,
     dsSwissKnifeClient,
     dsQueryLibrary
