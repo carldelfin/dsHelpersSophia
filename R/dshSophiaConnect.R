@@ -42,8 +42,8 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
         
         # let user know which nodes were exluded, if any
         if (!is.null(error_nodes)) {
-            cat("NOTE! NOTE! NOTE!\n")
-            cat("The following node(s) were exluded due to error(s):\n")
+            cat("NOTE! NOTE! NOTE!\n\n")
+            cat("The following node(s) will be exluded due to connection errors:\n\n")
             cat(error_nodes$node_name, "\n")
         }
     }
@@ -108,6 +108,6 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
 
     # finally, let the user know which cohorts are accessible
     cat("\n")
-    cat("You are now connected to the following", nrow(nodes_and_cohorts), "cohort(s) via the federated database:\n")
+    cat("You are now connected to the following", nrow(nodes_and_cohorts), "cohort(s) via the federated database:\n\n")
     cat(nodes_and_cohorts$name, "\n")
 }
