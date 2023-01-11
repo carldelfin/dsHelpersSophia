@@ -19,8 +19,8 @@ RoxygenNote: 7.2.1.9000
 Imports:
     httr,
     RCurl,
-    DSI,
     DSOpal,
+    DSI,
     opalr,
     VIM,
     rrapply,
