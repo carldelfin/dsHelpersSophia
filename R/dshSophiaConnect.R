@@ -44,7 +44,7 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
         if (!is.null(error_nodes)) {
             cat("NOTE! NOTE! NOTE!\n")
             cat("The following node(s) were exluded due to error(s):\n")
-            cat(error_nodes$node_name)
+            cat(error_nodes$node_name, "\n")
         }
     }
 
@@ -105,4 +105,9 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
         expr = { opals <<- DSI::datashield.login(logins = builder$build()) },
         error = function(e) { message("\nUnable to log in, please check your credentials!") }
     )
+
+    # finally, let the user know which cohorts are accessible
+    cat("\n")
+    cat("You are now connected to the following", nrow(nodes_and_cohorts), "cohort(s) via the federated database:\n")
+    cat(nodes_and_cohorts$name, "\n")
 }
