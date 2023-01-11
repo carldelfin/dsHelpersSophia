@@ -4,6 +4,7 @@
 #' @param username A character; your username. Defaults to `Sys.getenv("fdb_user")`.
 #' @param password A character; your password. Defaults to `Sys.getenv("fdb_password")`.
 #' @param include A character or vector of characters containing only the nodes you want to connect to. 
+#' @param error A character; either `exclude` (default) or `include` (optional). If `exclude`, any nodes with an error will not be connected to. The user will notified if this is the case. If `include`, a connection attempt will be made, but is unlikely to succedd.
 #' @param exclude A character or vector of characters containing only the nodes you do not want to connect to.
 #' @return An Opals object (`opals`) is assigned to the Global environment.
 #' @examples
@@ -25,6 +26,7 @@
 #' @export
 dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
                              password = Sys.getenv("fdb_password"),
+                             error = "exclude",
                              include = NULL,
                              exclude = NULL) {
 
@@ -33,6 +35,18 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
     available_nodes <- read.csv(available_nodes) 
     available_nodes$node_name <- trimws(available_nodes$X, whitespace = ".*\\/")
     colnames(available_nodes) <- c("url", "error_code", "node_name")
+    
+    if (error == "exclude") {
+        error_nodes <- subset(available_nodes, error_code == 1)
+        available_nodes <- subset(available_nodes, error_code == 0)
+        
+        # let user know which nodes were exluded, if any
+        if (!is.null(error_nodes)) {
+            cat("NOTE! NOTE! NOTE!\n")
+            cat("The following node(s) were exluded due to error(s):\n")
+            cat(error_nodes$node_name)
+        }
+    }
 
     if (!is.null(include)) { 
         available_nodes <- subset(available_nodes, node_name %in% include)
