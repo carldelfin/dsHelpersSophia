@@ -20,7 +20,6 @@ Imports:
     httr,
     RCurl,
     DSOpal,
-    DSI,
     opalr,
     VIM,
     rrapply,
@@ -32,3 +31,5 @@ Remotes:
     datashield/dsBaseClient,
     sib-swiss/dsSwissKnifeClient,
     sib-swiss/dsQueryLibrary
+Depends: 
+    DSI
