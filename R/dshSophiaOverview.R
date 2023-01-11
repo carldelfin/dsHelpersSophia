@@ -15,6 +15,7 @@
 #' }
 #' @import DSOpal opalr httr DSI dsQueryLibrary rrapply purrr
 #' @importFrom utils menu 
+#' @importFrom DSI datashield.aggregate 
 #' @export
 dshSophiaOverview <- function() {
 
