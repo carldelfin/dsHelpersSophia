@@ -42,7 +42,7 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
         
         # let user know which nodes were exluded, if any
         if (!is.null(error_nodes)) {
-            cat("NOTE! NOTE! NOTE! The following node(s) will be exluded due to connection errors:\n")
+            cat("NOTE! The following node(s) will be exluded due to connection errors:\n")
             cat(error_nodes$node_name, "\n")
         }
     }

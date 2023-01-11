@@ -26,7 +26,8 @@ Imports:
     purrr,
     dsBaseClient,
     dsSwissKnifeClient,
-    dsQueryLibrary
+    dsQueryLibrary,
+    dplyr
 Remotes:
     datashield/dsBaseClient,
     sib-swiss/dsSwissKnifeClient,

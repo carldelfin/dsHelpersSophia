@@ -13,7 +13,7 @@
 #' # generate data overview
 #' overview <- dshSophiaOverview()
 #' }
-#' @import DSOpal opalr httr DSI dsQueryLibrary rrapply purrr
+#' @import DSOpal opalr httr DSI dsQueryLibrary rrapply purrr dplyr
 #' @importFrom utils menu 
 #' @export
 dshSophiaOverview <- function() {
@@ -50,6 +50,21 @@ dshSophiaOverview <- function() {
             overview <- purrr::map_df(overview,
                                       ~as.data.frame(.x),
                                       .id = "cohort")
+
+            overview <- overview |>
+                # remove redundant column
+                dplyr::select(-tbl_concept_id) |>
+                
+                # remove '_db' after each cohort name
+                dplyr::mutate(cohort = factor(gsub("(.*)_\\w+", "\\1", cohort))) |>
+
+                # fix strange formatting for 'table' column, then turn back into factor
+                dplyr::mutate(table = gsub(" ", "", as.character(table))) |>
+                dplyr::mutate(table = factor(table)) |>
+
+                # make 'concept_id' a factor
+                dplyr::mutate(concept_id = factor(concept_id)) |>
+                dplyr::select(cohort, dplyr::everything())
 
             return(overview)
         },
