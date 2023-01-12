@@ -111,4 +111,12 @@ dshSophiaShow(username = "username", password = "password")
 
 ### dshSophiaPrompt
 
-This function prompts the user for login details (if those are not available via `Sys.getenv()`) and then connects via `dshSophiaConnect`. The user is also given the option to supply a single character or a list of characters separated by a single space denoting the nodes to either include or exclude. The function is primarily a fallback used within `dshSophiaLoad` when the user has not logged in to the federated system. 
+This function prompts the user for login details (if those are not available via `Sys.getenv()`) and then connects via `dshSophiaConnect`. The user is also given the option to supply a single character or a list of characters separated by a single space denoting the nodes to either include or exclude. The function is primarily a fallback used within `dshSophiaLoad` when the user has not logged in to the federated system.
+
+### dshSophiaOverview
+
+This function gathers information about the data in each available cohorts and returns this in a data frame. It assumes that the user has connected via `dshSophiaConnect` and loaded database resources via `dshSophiaLoad()`. The function takes no arguments:
+
+```R
+overview <- dshSophiaOverview()
+```
