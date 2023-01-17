@@ -131,4 +131,10 @@ overview <- dshSophiaOverview()
 ```
 ### dshSophiaMeasureDesc
 
-Test.
+This function gathers descriptive information (e.g., mean, SD, median, and so on) about a variable in the [measurement table](https://www.ohdsi.org/web/wiki/doku.php?id=documentation:vocabulary:measurement). If the data is longitudinal it does so for every time point available. The results are returned in a data frame. The function assumes that the user has connected via `dshSophiaConnect` and loaded database resources via `dshSophiaLoad()`. It takes a single, valid Concept ID as argument:
+
+```R
+# get a descriptive overview of BMI measurements
+df <- dshSophiaMeasureDesc(concept_id = 3038553)
+print(df)
+```
