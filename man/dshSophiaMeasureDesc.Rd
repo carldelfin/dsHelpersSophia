@@ -20,7 +20,7 @@ dshSophiaConnect()
 # load database resources
 dshSophiaLoad()
 
-# get variable descriptives for BMI
+# get descriptive information about BMI
 df <- dshSophiaMeasureDesc(concept_id = 3038553)
 }
 }

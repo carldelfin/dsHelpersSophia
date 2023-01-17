@@ -10,7 +10,7 @@
 #' # load database resources
 #' dshSophiaLoad()
 #'
-#' # get variable descriptives for BMI
+#' # get descriptive information about BMI
 #' df <- dshSophiaMeasureDesc(concept_id = 3038553)
 #' }
 #' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dplyr
@@ -20,7 +20,7 @@ dshSophiaMeasureDesc <- function(concept_id) {
 
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
     # the user probably did not run dshSophiaConnect() yet. Here the user may do so, after 
-    # being promted for username and password.
+    # being prompted for username and password.
     if (exists("opals") == FALSE || exists("nodes_and_cohorts") == FALSE) {
         cat("")
         cat("No 'opals' and/or 'nodes_and_cohorts' object found\n")
@@ -48,13 +48,12 @@ dshSophiaMeasureDesc <- function(concept_id) {
             message("\nUnable to load measurement table, maybe the variable doesn't exist or you forgot to run 'dshSophiaLoad()'?")
     })
 
-
     # make sure it is ordered by ID and measurement data
     dsSwissKnifeClient::dssSubset("m",
                                   "m",
                                   "order(person_id, measurement_date)")
     
-    # check how many timepoints we have
+    # check how many time points we have
     dsSwissKnifeClient::dssPivot(symbol = "mw",
                                  what = "m",
                                  value.var = "value_as_number",
@@ -69,7 +68,7 @@ dshSophiaMeasureDesc <- function(concept_id) {
     # temporary results storage
     res <- NULL
     
-    # loop through timepoints and gather results
+    # loop through time points and gather results
     for (i in 1:num_timepoints) {
         
         # aggregation function for selecting the ith measurement

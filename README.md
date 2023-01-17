@@ -29,7 +29,16 @@ Several additional R packages are installed via dependencies. The following are 
 
 ## Usage
 
-### Keeping credentials in the .Renviron file
+* [Login credentials](https://github.com/carldelfin/dsHelpersSophia#login-credentials)
+* [dshSophiaConnect](https://github.com/carldelfin/dsHelpersSophia#dshsophiaconnect)
+* [dshSophiaLoad](https://github.com/carldelfin/dsHelpersSophia#dshsophiaload)
+* [dshSophiaExit](https://github.com/carldelfin/dsHelpersSophia#dshsophiaexit)
+* [dshSophiaShow](https://github.com/carldelfin/dsHelpersSophia#dshsophiashow)
+* [dshSophiaPrompt](https://github.com/carldelfin/dsHelpersSophia#dshsophiaprompt)
+* [dshSophiaOverview](https://github.com/carldelfin/dsHelpersSophia#dshsophiaoverview)
+* [dshSophiaMeasureDesc](https://github.com/carldelfin/dsHelpersSophia#dshsophiameasuredesc)
+
+### Login credentials
 
 It is never a good idea to keep sensitive credentials such as login information in R scripts. Although it is possible to enter credentials manually (see `dshSophiaPrompt`), it is usually more convenient to store them in an environment file. Basically, an environment file is list of variables that are automatically read when you start your R session. 
 
@@ -120,3 +129,6 @@ This function gathers information about the data in each available cohorts and r
 ```R
 overview <- dshSophiaOverview()
 ```
+### dshSophiaMeasureDesc
+
+Test.

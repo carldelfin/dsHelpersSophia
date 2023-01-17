@@ -20,7 +20,7 @@ dshSophiaOverview <- function() {
 
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
     # the user probably did not run dshSophiaConnect() yet. Here the user may do so, after 
-    # being promted for username and password.
+    # being prompted for username and password.
     if (exists("opals") == FALSE || exists("nodes_and_cohorts") == FALSE) {
         cat("")
         cat("No 'opals' and/or 'nodes_and_cohorts' object found\n")
