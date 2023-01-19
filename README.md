@@ -37,6 +37,7 @@ Several additional R packages are installed via dependencies. The following are 
 * [dshSophiaPrompt](https://github.com/carldelfin/dsHelpersSophia#dshsophiaprompt)
 * [dshSophiaOverview](https://github.com/carldelfin/dsHelpersSophia#dshsophiaoverview)
 * [dshSophiaMeasureDesc](https://github.com/carldelfin/dsHelpersSophia#dshsophiameasuredesc)
+* [dshSophiaCreateBaseline](https://github.com/carldelfin/dsHelpersSophia#dshsophiacreatebaseline)
 
 ### Login credentials
 
