@@ -2,7 +2,7 @@
 
 # dsHelpersSophia
 
-This package provides a series of helper functions intended to make it easier to work with the SOPHIA federated database. The goal is to lower the barrier of entry by (1) having the user install a single package that in turn makes sure that all other required packages are installed, and (2) providing functions for easy access to the federated database and its resources. 
+This package provides a series of helper functions intended to make it easier to work with the SOPHIA federated database. The goal is to lower the barrier of entry by (1) having the user install a single package that in turn makes sure that all other required packages are installed, and (2) providing functions for easy access to the federated database and its resources.
 
 The SOPHIA federated database is built and maintained by [Vital-IT](https://www.sib.swiss/vital-it) at the Swiss Institute of Bioinformatics, and is based around [DataSHIELD](https://www.datashield.org/) and [Opal](https://www.obiba.org/pages/products/opal/). More information about the SOPHIA project itself is available [here](https://www.imi.europa.eu/projects-results/project-factsheets/sophia) and [here](https://imisophia.eu/).
 
@@ -143,7 +143,7 @@ print(df)
 
 ### dshSophiaCreateBaseline
 
-This function creates a 'baseline' data frame on the federated cohort(s). Note that 'baseline' here refers to the *first available* date for that variable in the [measurement table](https://www.ohdsi.org/web/wiki/doku.php?id=documentation:vocabulary:measurement). The function also calculates an approximate age at baseline variable, based on date of birth and date of first available measurement. Note that several cohorts have nonsensical or incorrect dates for date of birth and/or date of first measurements, which renders the age at baseline variable incorrect. The function also creates a gender column based on data from the [person table](https://www.ohdsi.org/web/wiki/doku.php?id=documentation:vocabulary:person).
+This function creates a 'baseline' data frame on the federated cohort(s). Note that 'baseline' here refers to the *first available* date for that variable in the [measurement table](https://www.ohdsi.org/web/wiki/doku.php?id=documentation:vocabulary:measurement). The function also calculates an approximate age at baseline variable, based on date of birth and date of first available measurement. Note that several cohorts have nonsensical or incorrect dates for date of birth and/or date of first measurements, which renders the age at baseline variable incorrect. The function also creates a gender column based on data from the [person table](https://www.ohdsi.org/web/wiki/doku.php?id=documentation:vocabulary:gender).
 
 The function assumes that the user has connected via `dshSophiaConnect` and loaded database resources via `dshSophiaLoad`, and takes a vector of valid [Concept IDs](https://athena.ohdsi.org/search-terms/terms/3038553) as argument:
 

@@ -176,9 +176,10 @@ dshSophiaCreateBaseline <- function(concept_id) {
         name2 <- gsub("measurement_name.", "", name1)
         name3 <- gsub("\\.", "_", name2)
         name4 <- tolower(gsub("\\__", "_", name3))
+        name5 <- gsub("__", "_", name4)
         
         dsSwissKnifeClient::dssDeriveColumn("baseline",
-                                            name4,
+                                            name5,
                                             name1,
                                             datasources = opals)
     }

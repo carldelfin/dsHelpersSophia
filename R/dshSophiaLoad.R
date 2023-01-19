@@ -30,12 +30,24 @@ dshSophiaLoad <- function() {
 
     # now connect to each cohort individually
     for (i in 1:nrow(nodes_and_cohorts)) {
-        tmp <- nodes_and_cohorts[i, ]
-        this_opal <- paste0(tmp$node_name, "_", tmp$name)
-        this_project <- tmp$name
-        res <- opalr::opal.resources(opals[[this_opal]]@opal, this_project)
-        qualified_res_name <- paste0(this_project, ".", res$name)
-        symbol_name <- paste0(this_project, "_", res$name)
-        DSI::datashield.assign.resource(opals[this_opal], symbol_name, qualified_res_name)
+        
+        skip_to_next <- FALSE
+        
+        tryCatch(
+            expr = {
+                
+                tmp <- nodes_and_cohorts[i, ]
+                this_opal <- paste0(tmp$node_name, "_", tmp$name)
+                this_project <- tmp$name
+                res <- opalr::opal.resources(opals[[this_opal]]@opal, this_project)
+                qualified_res_name <- paste0(this_project, ".", res$name)
+                symbol_name <- paste0(this_project, "_", res$name)
+                DSI::datashield.assign.resource(opals[this_opal], symbol_name, qualified_res_name)
+            }, 
+                
+            error = function(e) { skip_to_next <<- TRUE }
+        )
+        
+        if (skip_to_next) { next }
     }
 }
