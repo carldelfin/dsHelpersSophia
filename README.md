@@ -139,3 +139,23 @@ This function gathers descriptive information (e.g., N, mean, SD, median, IQR) a
 df <- dshSophiaMeasureDesc(concept_id = 3038553)
 print(df)
 ```
+
+### dshSophiaCreateBaseline
+
+This function creates a 'baseline' data frame on the federated cohort(s). Note that 'baseline' here refers to the *first available* date for that variable in the [measurement table](https://www.ohdsi.org/web/wiki/doku.php?id=documentation:vocabulary:measurement). The function also calculates an approximate age at baseline variable, based on date of birth and date of first available measurement. Note that several cohorts have nonsensical or incorrect dates for date of birth and/or date of first measurements, which renders the age at baseline variable incorrect. The function also creates a gender column based on data from the [person table](https://www.ohdsi.org/web/wiki/doku.php?id=documentation:vocabulary:person).
+
+The function assumes that the user has connected via `dshSophiaConnect` and loaded database resources via `dshSophiaLoad`, and takes a vector of valid [Concept IDs](https://athena.ohdsi.org/search-terms/terms/3038553) as argument:
+
+```R
+# connect to the federated system
+dshSophiaConnect()
+
+# load database resources
+dshSophiaLoad()
+
+# create a 'baseline' data frame on the federated node
+dshSophiaCreateBaseline(concept_id = c(3038553, 3025315, 37020574))
+ 
+# check result
+dsBaseClient::ds.summary("baseline")
+```

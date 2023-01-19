@@ -1,6 +1,6 @@
 #' Create a baseline data frame on the federated node
 #'
-#' Given a vector of valid measurement table Concept IDs the function creates a 'baseline' data frame on the federated node. Here, 'baseline' means the first measurement available, and as such may be different for different Concept IDs. The function also creates an approximate 'age at baseline' column and merged the baseline data with gender if available in the person table.
+#' Given a vector of valid measurement table Concept IDs the function creates a 'baseline' data frame on the federated node. Here, 'baseline' means the first measurement available, and as such may be different for different Concept IDs. The function also creates an approximate 'age_baseline' variable and merged the baseline data with gender if available in the person table.
 #' @return A data frame.
 #' @examples
 #' \dontrun{
@@ -12,6 +12,9 @@
 #'
 #' # create a 'baseline' data frame on the federated node
 #' dshSophiaCreateBaseline(concept_id = c(3038553, 3025315, 37020574))
+#' 
+#' # check result
+#' dsBaseClient::ds.summary("baseline")
 #' }
 #' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dplyr
 #' @importFrom utils menu 
@@ -32,6 +35,11 @@ dshSophiaCreateBaseline <- function(concept_id) {
                cat("Test"), 
                dshSophiaPrompt(),
                stop("Aborting..."))
+    }
+    
+    # make sure the user has specified some concept IDs
+    if (is.null(concept_id)) { 
+        stop("No measurement table concept IDs specified, aborting...")
     }
     
     # ----------------------------------------------------------------------------------------------
@@ -76,11 +84,6 @@ dshSophiaCreateBaseline <- function(concept_id) {
     # ----------------------------------------------------------------------------------------------
     # get baseline clinical variables from measurement table
     # ----------------------------------------------------------------------------------------------
-    
-    # make sure the user has specified some concept IDs
-    if (is.null(concept_id)) { 
-        stop("No measurement table concept IDs specified, aborting...")
-    }
     
     # create SQL statement
     where_clause <- paste(concept_id, collapse = ",")

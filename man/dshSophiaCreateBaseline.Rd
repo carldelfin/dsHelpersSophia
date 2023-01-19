@@ -10,7 +10,7 @@ dshSophiaCreateBaseline(concept_id)
 A data frame.
 }
 \description{
-Given a vector of valid measurement table Concept IDs the function creates a 'baseline' data frame on the federated node. Here, 'baseline' means the first measurement available, and as such may be different for different Concept IDs. The function also creates an approximate 'age at baseline' column and merged the baseline data with gender if available in the person table.
+Given a vector of valid measurement table Concept IDs the function creates a 'baseline' data frame on the federated node. Here, 'baseline' means the first measurement available, and as such may be different for different Concept IDs. The function also creates an approximate 'age_baseline' variable and merged the baseline data with gender if available in the person table.
 }
 \examples{
 \dontrun{
@@ -22,5 +22,8 @@ dshSophiaLoad()
 
 # create a 'baseline' data frame on the federated node
 dshSophiaCreateBaseline(concept_id = c(3038553, 3025315, 37020574))
+
+# check result
+dsBaseClient::ds.summary("baseline")
 }
 }
