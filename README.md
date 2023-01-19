@@ -40,7 +40,7 @@ Several additional R packages are installed via dependencies. The following are 
 
 ### Login credentials
 
-It is never a good idea to keep sensitive credentials such as login information in R scripts. Although it is possible to enter credentials manually (see `dshSophiaPrompt`), it is usually more convenient to store them in an environment file. Basically, an environment file is list of variables that are automatically read when you start your R session. 
+It is never a good idea to keep sensitive credentials such as login information in R scripts. Although it is possible to enter credentials manually (see [dshSophiaPrompt](https://github.com/carldelfin/dsHelpersSophia#dshsophiaprompt)), it is usually more convenient to store them in an environment file. Basically, an environment file is list of variables that are automatically read when you start your R session. 
 
 Thus, for a more streamlined experience, most functions in `dsHelpersSophia` will look for user credentials in the `.Renviron` file. If you don't already have one, you can either create it manually (R will look for it in the current user's home directory, which on Linux would be `~/.Renviron` and on Windows `C:\Users\USERNAME\Documents\.Renviron`) or use the [usethis](https://usethis.r-lib.org/) package: `usethis::edit_r_environ()`.
 
@@ -132,7 +132,7 @@ head(overview)
 ```
 ### dshSophiaMeasureDesc
 
-This function gathers descriptive information (e.g., mean, SD, median, and so on) about a variable in the [measurement table](https://www.ohdsi.org/web/wiki/doku.php?id=documentation:vocabulary:measurement). If the data is longitudinal it does so for every time point available. The results are returned in a data frame. The function assumes that the user has connected via `dshSophiaConnect` and loaded database resources via `dshSophiaLoad()`. It takes a single, valid [Concept ID](https://athena.ohdsi.org/search-terms/terms/3038553) as argument:
+This function gathers descriptive information (e.g., N, mean, SD, median, IQR) about a variable in the [measurement table](https://www.ohdsi.org/web/wiki/doku.php?id=documentation:vocabulary:measurement). If the data is longitudinal it does so for every time point available. The results are returned in a data frame. The function assumes that the user has connected via `dshSophiaConnect` and loaded database resources via `dshSophiaLoad`, and takes a single, valid [Concept ID](https://athena.ohdsi.org/search-terms/terms/3038553) as argument:
 
 ```R
 # get a descriptive overview of BMI measurements
