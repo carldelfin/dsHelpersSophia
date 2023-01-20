@@ -38,6 +38,7 @@ Several additional R packages are installed via dependencies. The following are 
 * [dshSophiaOverview](https://github.com/carldelfin/dsHelpersSophia#dshsophiaoverview)
 * [dshSophiaMeasureDesc](https://github.com/carldelfin/dsHelpersSophia#dshsophiameasuredesc)
 * [dshSophiaCreateBaseline](https://github.com/carldelfin/dsHelpersSophia#dshsophiacreatebaseline)
+* [dshSophiaMergeLongMeas](https://github.com/carldelfin/dsHelpersSophia#dshsophiamergelongmeas)
 
 ### Login credentials
 
@@ -157,6 +158,29 @@ dshSophiaLoad()
 # create a 'baseline' data frame on the federated node
 dshSophiaCreateBaseline(concept_id = c(3038553, 3025315, 37020574))
  
+# check result
+dsBaseClient::ds.summary("baseline")
+```
+
+### dshSophiaMergeLongMeas
+
+This function takes a variable in the [measurement table](https://www.ohdsi.org/web/wiki/doku.php?id=documentation:vocabulary:measurement), pivots it to wide format, and merges it with the 'baseline' federated data frame. If multiple measurements are available, the are all included and the variable name is appended with `t_x` for each time point. In addition, the raw difference as well as percentage change between `t1` and `tx` is also calculated and added to 'baseline'. Note that as with `dshSophiaCreateBaseline`, `t_1` refers to the *first available* date for that variable.
+
+The function assumes that the user has connected via `dshSophiaConnect`, loaded database resources via `dshSophiaLoad`, and created a federated baseline data frame with `dshSophiaCreateBaseline`. It takes a single valid [Concept IDs](https://athena.ohdsi.org/search-terms/terms/3038553) as argument.
+
+```R
+# connect to the federated system
+dshSophiaConnect()
+
+# load database resources
+dshSophiaLoad()
+
+# create a 'baseline' data frame on the federated node
+dshSophiaCreateBaseline(concept_id = c(4111665, 3004410, 3001308))
+
+# add a longitudinal measure
+dshSophiaMergeLongMeas(concept_id = 3038553)
+
 # check result
 dsBaseClient::ds.summary("baseline")
 ```
