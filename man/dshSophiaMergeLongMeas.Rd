@@ -2,15 +2,15 @@
 % Please edit documentation in R/dshSophiaMergeLongMeas.R
 \name{dshSophiaMergeLongMeas}
 \alias{dshSophiaMergeLongMeas}
-\title{Create a baseline data frame on the federated node}
+\title{Merge a (longitudinal) measurement table variable with the federated 'baseline' data frame}
 \usage{
 dshSophiaMergeLongMeas(concept_id)
 }
 \value{
-A data frame.
+Nothing, the federated 'baseline' data frame is appended.
 }
 \description{
-Given a vector of valid measurement table Concept IDs the function creates a 'baseline' data frame on the federated node. Here, 'baseline' means the first measurement available, and as such may be different for different Concept IDs. The function also creates an approximate 'age_baseline' variable and merged the baseline data with gender if available in the person table.
+Given a valid measurement table Concept ID, the function merges that variable (in wide format) with the 'baseline' data frame on the federated node. Note that the 'baseline' data frame must already exist. If the variable is available across several time points, all time points are included, and the raw difference plus percentage change from time point 1 to timepoint X is calculated.
 }
 \examples{
 \dontrun{
@@ -21,7 +21,10 @@ dshSophiaConnect()
 dshSophiaLoad()
 
 # create a 'baseline' data frame on the federated node
-dshSophiaCreateBaseline(concept_id = c(3038553, 3025315, 37020574))
+dshSophiaCreateBaseline(concept_id = c(4111665, 3004410, 3001308))
+
+# add a longitudinal measure
+dshSophiaMergeLongMeas(concept_id = 3038553)
 
 # check result
 dsBaseClient::ds.summary("baseline")

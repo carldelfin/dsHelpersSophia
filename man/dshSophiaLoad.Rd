@@ -7,7 +7,7 @@
 dshSophiaLoad()
 }
 \value{
-Nothing, all databases are loaded locally.
+Nothing, all databases are loaded locally on each federated node.
 }
 \description{
 Loads all database resources on federated nodes.

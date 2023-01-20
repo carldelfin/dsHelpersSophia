@@ -1,7 +1,7 @@
-#' Create a baseline data frame on the federated node
+#' Merge a (longitudinal) measurement table variable with the federated 'baseline' data frame
 #'
-#' Given a vector of valid measurement table Concept IDs the function creates a 'baseline' data frame on the federated node. Here, 'baseline' means the first measurement available, and as such may be different for different Concept IDs. The function also creates an approximate 'age_baseline' variable and merged the baseline data with gender if available in the person table.
-#' @return A data frame.
+#' Given a valid measurement table Concept ID, the function merges that variable (in wide format) with the 'baseline' data frame on the federated node. Note that the 'baseline' data frame must already exist. If the variable is available across several time points, all time points are included, and the raw difference plus percentage change from time point 1 to timepoint X is calculated.
+#' @return Nothing, the federated 'baseline' data frame is appended.
 #' @examples
 #' \dontrun{
 #' # connect to the federated system
@@ -11,7 +11,10 @@
 #' dshSophiaLoad()
 #'
 #' # create a 'baseline' data frame on the federated node
-#' dshSophiaCreateBaseline(concept_id = c(3038553, 3025315, 37020574))
+#' dshSophiaCreateBaseline(concept_id = c(4111665, 3004410, 3001308))
+#' 
+#' # add a longitudinal measure
+#' dshSophiaMergeLongMeas(concept_id = 3038553)
 #' 
 #' # check result
 #' dsBaseClient::ds.summary("baseline")
@@ -44,12 +47,12 @@ dshSophiaMergeLongMeas <- function(concept_id) {
             where_clause <- paste0("measurement_concept_id in ('", concept_id, "')")
             
             # load the measurement table
-            dsqLoad(symbol = "m",
-                    domain = "concept_name",
-                    query_name = "measurement",
-                    where_clause = where_clause,
-                    union = TRUE,
-                    datasources = opals)
+            dsQueryLibrary::dsqLoad(symbol = "m",
+                                   domain = "concept_name",
+                                   query_name = "measurement",
+                                   where_clause = where_clause,
+                                   union = TRUE,
+                                   datasources = opals)
         },
         error = function(e) { 
             message("\nUnable to load measurement table, maybe the variable doesn't exist or you forgot to run 'dshSophiaLoad()'?")
@@ -111,8 +114,9 @@ dshSophiaMergeLongMeas <- function(concept_id) {
                                     join.type = "inner",
                                     datasources = opals)
         
-        # calculate actual difference and percent change
+        # calculate raw difference and percent change
         if (i > 1) {
+            
             dsSwissKnifeClient::dssDeriveColumn("baseline",
                                                 paste0(name5, "_minus_t1"), 
                                                 paste0(name5, " - ", gsub(paste0("t", i), "t1", name5)),

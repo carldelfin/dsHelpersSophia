@@ -1,7 +1,7 @@
 #' Load database resources 
 #'
 #' Loads all database resources on federated nodes. 
-#' @return Nothing, all databases are loaded locally.
+#' @return Nothing, all databases are loaded locally on each federated node.
 #' @examples
 #' \dontrun{
 #' # connect to the federated system

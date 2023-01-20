@@ -1,7 +1,7 @@
 #' Create a baseline data frame on the federated node
 #'
 #' Given a vector of valid measurement table Concept IDs the function creates a 'baseline' data frame on the federated node. Here, 'baseline' means the first measurement available, and as such may be different for different Concept IDs. The function also creates an approximate 'age_baseline' variable and merged the baseline data with gender if available in the person table.
-#' @return A data frame.
+#' @return A federated data frame named 'baseline'.
 #' @examples
 #' \dontrun{
 #' # connect to the federated system
