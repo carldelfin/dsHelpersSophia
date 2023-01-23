@@ -79,6 +79,12 @@ dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all", difference = "p
     concept_name <- dsBaseClient::ds.summary("mw")[[1]][[4]][2]
     num_timepoints <- dsBaseClient::ds.summary(paste0("mw$", concept_name))[[1]][[3]][[7]]
     
+    # are there multiple time points?
+    if (num_timepoints == 1) {
+        stop("\nOnly a single measurement found, aborting...")
+    }
+    
+    # all time points or just specific?
     if (endpoint != "all") {
         num_timepoints <- endpoint
     }
