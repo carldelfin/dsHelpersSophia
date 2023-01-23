@@ -182,7 +182,6 @@ dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all", difference = "p
                                               datasources = opals)
             }
             
-            
             # merge with 'baseline'
             dsSwissKnifeClient::dssJoin(c("m_t1", "baseline"),
                                         symbol = "baseline",
@@ -292,7 +291,6 @@ dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all", difference = "p
                                                                       "')"),
                                                   datasources = opals)
                 }
-                
                 
                 # merge with 'baseline'
                 dsSwissKnifeClient::dssJoin(c("m_t1", "baseline"),
