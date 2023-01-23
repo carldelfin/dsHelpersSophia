@@ -75,26 +75,51 @@ dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all") {
     concept_name <- dsBaseClient::ds.summary("mw")[[1]][[4]][2]
     num_timepoints <- dsBaseClient::ds.summary(paste0("mw$", concept_name))[[1]][[3]][[7]]
     
+    # first time point
+    # pivot and take first measurement
+    dsSwissKnifeClient::dssPivot("m_t1",
+                                 what = "m",
+                                 value.var = "value_as_number",
+                                 formula = "person_id ~ measurement_name",
+                                 by.col = "person_id",
+                                 fun.aggregate = "function(x) x[1]",
+                                 datasources = opals)
+    
+    # fix column name and subset
+    name1 <- concept_name
+    name2 <- gsub("measurement_name.", "", name1)
+    name3 <- gsub("\\.", "_", name2)
+    name4 <- paste0(tolower(gsub("\\__", "_", name3)), "_t1")
+    name5 <- gsub("__", "_", name4)
+    
+    dsSwissKnifeClient::dssDeriveColumn("m_t1",
+                                        name5,
+                                        name1,
+                                        datasources = opals)
+    
+    dsSwissKnifeClient::dssSubset("m_t1",
+                                  "m_t1",
+                                  col.filter = paste0("c('person_id', '", name5, "')"),
+                                  datasources = opals)
+    
     if (endpoint != "all") {
         num_timepoints <- endpoint
     }
 
     # loop through time points and gather results
-    for (i in 1:num_timepoints) {
-        
+    for (i in 2:num_timepoints) {
+
         # aggregation function for selecting the ith measurement
         aggr <- paste0("function(x) x[", i, "]")
         
-        # pivot and take ith measurement
-        dsSwissKnifeClient::dssPivot(symbol = paste0("m_t", i),
+        dsSwissKnifeClient::dssPivot(paste0("m_t", i),
                                      what = "m",
                                      value.var = "value_as_number",
                                      formula = "person_id ~ measurement_name",
                                      by.col = "person_id",
-                                     fun.aggregate = eval(parse(text = aggr)),
+                                     fun.aggregate = aggr,
                                      datasources = opals)
         
-        # fix column name and subset
         name1 <- concept_name
         name2 <- gsub("measurement_name.", "", name1)
         name3 <- gsub("\\.", "_", name2)
@@ -111,33 +136,40 @@ dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all") {
                                       col.filter = paste0("c('person_id', '", name5, "')"),
                                       datasources = opals)
         
+        # merge with m_t1
+        dsSwissKnifeClient::dssJoin(c(paste0("m_t", i), "m_t1"),
+                                    symbol = "m_t1",
+                                    by = "person_id",
+                                    join.type = "inner",
+                                    datasources = opals)
+        
         # calculate raw difference and percent change
-        if (i > 1) {
-            
-            dsSwissKnifeClient::dssDeriveColumn("m_t1",
-                                                paste0(name5, "_minus_t1"), 
-                                                paste0(name5, " - ", gsub(paste0("t", i), "t1", name5)),
-                                                datasources = opals)
-            
-            dsSwissKnifeClient::dssDeriveColumn("m_t1",
-                                                paste0(name5, "_pct_diff_from_t1"),
-                                                paste0("((", name5, " - ", gsub(paste0("t", i), "t1", name5), ") / ", gsub(paste0("t", i), "t1", name5), ") * 100"),
-                                                datasources = opals)
-            
-            name5_1 <- paste0(name5, "_minus_t", i)
-            name5_2 <- paste0(name5, "_pct_diff_from_t", i)
-            
-            dsSwissKnifeClient::dssSubset("m_t1",
-                                          paste0("m_t", i),
-                                          col.filter = paste0("c('person_id', '", name5_1, "', '", name5_2, "')"),
-                                          datasources = opals)
-            
-            # merge with 'baseline'
-            dsSwissKnifeClient::dssJoin(c("m_t1", "baseline"),
-                                        symbol = "baseline",
-                                        by = "person_id",
-                                        join.type = "inner",
-                                        datasources = opals)
-        }
+        dsSwissKnifeClient::dssDeriveColumn("m_t1",
+                                            paste0(name5, "_minus_t1"), 
+                                            paste0(name5, " - ", gsub(paste0("t", i), "t1", name5)),
+                                            datasources = opals)
+        
+        dsSwissKnifeClient::dssDeriveColumn("m_t1",
+                                            paste0(name5, "_pct_diff_from_t1"),
+                                            paste0("((", name5, " - ", gsub(paste0("t", i), "t1", name5), ") / ", gsub(paste0("t", i), "t1", name5), ") * 100"),
+                                            datasources = opals)
+        
+        name5_1 <- paste0(name4, "_minus_t1")
+        name5_2 <- paste0(name5, "_pct_diff_from_t1")
+        
+        dsSwissKnifeClient::dssSubset("m_t1",
+                                      "m_t1",
+                                      col.filter = paste0("c('person_id', '", name5_1, "', '", name5_2, "')"),
+                                      datasources = opals)
+        
+        # merge with 'baseline'
+        dsSwissKnifeClient::dssJoin(c("m_t1", "baseline"),
+                                    symbol = "baseline",
+                                    by = "person_id",
+                                    join.type = "inner",
+                                    datasources = opals)
     }
+    
+    # remove temporary data frame
+    dsBaseClient::ds.rm(c("m", "mw", "m_t1"))
 }
