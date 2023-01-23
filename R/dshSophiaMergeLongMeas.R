@@ -192,7 +192,8 @@ dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all", difference = "p
             
             # remove temporary data frame
             dsBaseClient::ds.rm("m_t1")
-        }
+            
+        } else {
         
         # loop through time points
         for (i in 2:num_timepoints) {
@@ -302,6 +303,8 @@ dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all", difference = "p
             
             # remove temporary data frame
             dsBaseClient::ds.rm("m_t1")
+            
+            }
         }
     }
 
