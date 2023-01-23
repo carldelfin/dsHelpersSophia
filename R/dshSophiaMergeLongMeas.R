@@ -22,7 +22,7 @@
 #' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaMergeLongMeas <- function(concept_id) {
+dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all") {
 
     # ----------------------------------------------------------------------------------------------
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
@@ -74,6 +74,10 @@ dshSophiaMergeLongMeas <- function(concept_id) {
     
     concept_name <- dsBaseClient::ds.summary("mw")[[1]][[4]][2]
     num_timepoints <- dsBaseClient::ds.summary(paste0("mw$", concept_name))[[1]][[3]][[7]]
+    
+    if (endpoint != "all") {
+        num_timepoints <- endpoint
+    }
 
     # loop through time points and gather results
     for (i in 1:num_timepoints) {
