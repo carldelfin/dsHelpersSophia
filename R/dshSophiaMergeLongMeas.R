@@ -111,25 +111,33 @@ dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all") {
                                       col.filter = paste0("c('person_id', '", name5, "')"),
                                       datasources = opals)
         
-        # merge with 'baseline'
-        dsSwissKnifeClient::dssJoin(c(paste0("m_t", i), "baseline"), 
-                                    symbol = "baseline",
-                                    by = "person_id",
-                                    join.type = "inner",
-                                    datasources = opals)
-        
         # calculate raw difference and percent change
         if (i > 1) {
             
-            dsSwissKnifeClient::dssDeriveColumn("baseline",
+            dsSwissKnifeClient::dssDeriveColumn("m_t1",
                                                 paste0(name5, "_minus_t1"), 
                                                 paste0(name5, " - ", gsub(paste0("t", i), "t1", name5)),
                                                 datasources = opals)
             
-            dsSwissKnifeClient::dssDeriveColumn("baseline",
+            dsSwissKnifeClient::dssDeriveColumn("m_t1",
                                                 paste0(name5, "_pct_diff_from_t1"),
                                                 paste0("((", name5, " - ", gsub(paste0("t", i), "t1", name5), ") / ", gsub(paste0("t", i), "t1", name5), ") * 100"),
                                                 datasources = opals)
+            
+            name5_1 <- paste0(name5, "_minus_t", i)
+            name5_2 <- paste0(name5, "_pct_diff_from_t", i)
+            
+            dsSwissKnifeClient::dssSubset("m_t1",
+                                          paste0("m_t", i),
+                                          col.filter = paste0("c('person_id', '", name5_1, "', '", name5_2, "')"),
+                                          datasources = opals)
+            
+            # merge with 'baseline'
+            dsSwissKnifeClient::dssJoin(c("m_t1", "baseline"),
+                                        symbol = "baseline",
+                                        by = "person_id",
+                                        join.type = "inner",
+                                        datasources = opals)
         }
     }
 }
