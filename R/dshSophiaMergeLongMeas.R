@@ -143,7 +143,7 @@ dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all", difference = "p
             dsSwissKnifeClient::dssJoin(c(paste0("m_t", i), "m_t1"),
                                         symbol = "m_t1",
                                         by = "person_id",
-                                        join.type = "inner",
+                                        join.type = "full",
                                         datasources = opals)
             
             # calculate difference
@@ -186,7 +186,7 @@ dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all", difference = "p
             dsSwissKnifeClient::dssJoin(c("m_t1", "baseline"),
                                         symbol = "baseline",
                                         by = "person_id",
-                                        join.type = "inner",
+                                        join.type = "full",
                                         datasources = opals)
             
             # remove temporary data frame
@@ -253,7 +253,7 @@ dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all", difference = "p
                 dsSwissKnifeClient::dssJoin(c(paste0("m_t", i), "m_t1"),
                                             symbol = "m_t1",
                                             by = "person_id",
-                                            join.type = "inner",
+                                            join.type = "full",
                                             datasources = opals)
                 
                 # calculate difference
@@ -296,7 +296,7 @@ dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all", difference = "p
                 dsSwissKnifeClient::dssJoin(c("m_t1", "baseline"),
                                             symbol = "baseline",
                                             by = "person_id",
-                                            join.type = "inner",
+                                            join.type = "full",
                                             datasources = opals)
                 
                 # remove temporary data frame
