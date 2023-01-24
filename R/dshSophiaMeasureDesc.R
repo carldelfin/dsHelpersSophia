@@ -16,7 +16,7 @@
 #' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaMeasureDesc <- function(concept_id) {
+dshSophiaMeasureDesc <- function(concept_id, procedure_id = NULL) {
 
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
     # the user probably did not run dshSophiaConnect() yet. Here the user may do so, after 
@@ -37,7 +37,7 @@ dshSophiaMeasureDesc <- function(concept_id) {
             where_clause <- paste0("measurement_concept_id in ('", concept_id, "')")
             
             # load the measurement table
-            dsqLoad(symbol = "m",
+            dsQueryLibrary::dsqLoad(symbol = "m",
                     domain = "concept_name",
                     query_name = "measurement",
                     where_clause = where_clause,
@@ -52,6 +52,23 @@ dshSophiaMeasureDesc <- function(concept_id) {
     dsSwissKnifeClient::dssSubset("m",
                                   "m",
                                   "order(person_id, measurement_date)")
+    
+    # subset by group?
+    if (!is.null(procedure_id)) {
+        
+        p_clause <- paste0("procedure_concept_id in ('", procedure_id, "')")
+        
+        dsQueryLibrary::dsqLoad(symbol = "p",
+                                    domain = "concept_name",
+                                    query_name = "procedure_occurrence",
+                                    where_clause = p_clause,
+                                    union = TRUE,
+                                    datasources = opals)
+        
+        dsSwissKnifeClient::dssSubset("m",
+                                      "m",
+                                      row.filter = "person_id %in% p$person_id")
+    }
     
     # check how many time points we have
     dsSwissKnifeClient::dssPivot(symbol = "mw",
@@ -154,6 +171,13 @@ dshSophiaMeasureDesc <- function(concept_id) {
                       mean_days_from_baseline, mean_months_from_baseline,
                       n, mean, mean_pct_change, sd, median, 
                       q1, q3, iqr, min, max)
+    
+    # are results grouped?
+    if (!is.null(procedure_id)) {
+        res <- res |>
+            dplyr::mutate(procedure_id = procedure_id) |>
+            dplyr::select(procedure_id, dplyr::everything())
+    }
     
     return(res)
 
