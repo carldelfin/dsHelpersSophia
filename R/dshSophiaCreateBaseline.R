@@ -37,11 +37,6 @@ dshSophiaCreateBaseline <- function() {
                stop("Aborting..."))
     }
     
-    # make sure the user has specified some concept IDs
-    if (is.null(concept_id)) { 
-        stop("No measurement table concept IDs specified, aborting...")
-    }
-    
     # --------------------------------------------------------------------------------------------------
     # get year of birth and gender from person table
     # --------------------------------------------------------------------------------------------------
