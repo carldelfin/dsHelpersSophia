@@ -68,21 +68,21 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL) {
                                     union = TRUE,
                                     datasources = opals)
             
-            dssDeriveColumn("p",
+            dsSwissKnifeClient::dssDeriveColumn("p",
                             "outcome1", 
                             "1")
             
-            dssDeriveColumn("baseline",
+            dsSwissKnifeClient::dssDeriveColumn("baseline",
                             "outcome0", 
                             "0")
             
-            dssJoin(c("p", "baseline"), 
+            dsSwissKnifeClient::dssJoin(c("p", "baseline"), 
                     symbol = "tmp",
                     by = "person_id",
                     join.type = "full",
                     datasources = opals)
             
-            ds.Boole(V1 = "tmp$outcome1",
+            dsBaseClient::ds.Boole(V1 = "tmp$outcome1",
                      V2 = "tmp$outcome0",
                      Boolean.operator = ">",
                      numeric.output = TRUE,
@@ -90,19 +90,22 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL) {
                      newobj = "outcome_bool",
                      datasources = opals)
             
-            ds.asFactor(input.var.name = "outcome_bool",
+            dsBaseClient::ds.asFactor(input.var.name = "outcome_bool",
                         newobj.name = "outcome_fct",
                         datasources = opals)
             
-            dssDeriveColumn("baseline",
+            dsSwissKnifeClient::dssDeriveColumn("baseline",
                             paste0("has_procedure_", i), 
                             "outcome_fct")
             
-            dssSubset("baseline",
+            dsSwissKnifeClient::dssSubset("baseline",
                       "baseline",
                       col.filter = '!(colnames(baseline) %in% c("outcome0"))',
                       datasources = opals)
             
         }
     }
+    
+    dsBaseClient::ds.rm(c("tmp", "p", "outcome_bool", "outcome_fct"))
+    
 }
