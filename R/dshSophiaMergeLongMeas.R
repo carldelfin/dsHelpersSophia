@@ -190,34 +190,34 @@ dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all", difference = "p
             dsBaseClient::ds.rm("m_t1")
             
         } else {
+            
+            # first time point
+            # pivot and take first measurement
+            dsSwissKnifeClient::dssPivot("m_t1",
+                                         what = "m",
+                                         value.var = "value_as_number",
+                                         formula = "person_id ~ measurement_concept_id",
+                                         by.col = "person_id",
+                                         fun.aggregate = "function(x) x[1]",
+                                         datasources = opals)
+            
+            # fix column name and subset
+            name1 <- curr_concept_id
+            name2 <- gsub("measurement_concept_id.", "", name1)
+            name3 <- paste0("t1_", name2)
+            
+            dsSwissKnifeClient::dssDeriveColumn("m_t1",
+                                                name3,
+                                                name1,
+                                                datasources = opals)
+            
+            dsSwissKnifeClient::dssSubset("m_t1",
+                                          "m_t1",
+                                          col.filter = paste0("c('person_id', '", name3, "')"),
+                                          datasources = opals)
         
             # loop through time points
             for (i in 2:num_timepoints) {
-                
-                # first time point
-                # pivot and take first measurement
-                dsSwissKnifeClient::dssPivot("m_t1",
-                                             what = "m",
-                                             value.var = "value_as_number",
-                                             formula = "person_id ~ measurement_concept_id",
-                                             by.col = "person_id",
-                                             fun.aggregate = "function(x) x[1]",
-                                             datasources = opals)
-                
-                # fix column name and subset
-                name1 <- curr_concept_id
-                name2 <- gsub("measurement_concept_id.", "", name1)
-                name3 <- paste0("t1_", name2)
-                
-                dsSwissKnifeClient::dssDeriveColumn("m_t1",
-                                                    name3,
-                                                    name1,
-                                                    datasources = opals)
-                
-                dsSwissKnifeClient::dssSubset("m_t1",
-                                              "m_t1",
-                                              col.filter = paste0("c('person_id', '", name3, "')"),
-                                              datasources = opals)
                 
                 # aggregation function for selecting the ith measurement
                 aggr <- paste0("function(x) x[", i, "]")
