@@ -22,7 +22,7 @@
 #' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all", difference = "percentage") {
+dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all") {
 
     # ----------------------------------------------------------------------------------------------
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
@@ -38,10 +38,6 @@ dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all", difference = "p
                cat("Test"), 
                dshSophiaPrompt(),
                stop("Aborting..."))
-    }
-    
-    if (!difference %in% c("percentage", "raw")) {
-        stop("'difference' must be either 'percentage' or 'raw', aborting...")
     }
     
     # make sure the user has specified a concept ID that can be loaded from the measurement table
@@ -143,41 +139,22 @@ dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all", difference = "p
                                         join.type = "full",
                                         datasources = opals)
             
-            # calculate difference
-            if (difference == "percentage") {
-                
-                dsSwissKnifeClient::dssDeriveColumn("m_t1",
-                                                    paste0(name3, "_pct_diff_from_t1"),
-                                                    paste0("((", 
-                                                           name3,
-                                                           " - ", 
-                                                           gsub(paste0("t", i), "t1", name3),
-                                                           ") / ", 
-                                                           gsub(paste0("t", i), "t1", name3), 
-                                                           ") * 100"),
-                                                    datasources = opals)
-                
-                # dsSwissKnifeClient::dssSubset("m_t1",
-                #                               "m_t1",
-                #                               col.filter = paste0("c('person_id', '",
-                #                                                   paste0(name3, "_pct_diff_from_t1"),
-                #                                                   "')"),
-                #                               datasources = opals)
-                
-            } else {
-                
-                dsSwissKnifeClient::dssDeriveColumn("m_t1",
-                                                    paste0(name3, "_minus_t1"), 
-                                                    paste0(name3, " - ", gsub(paste0("t", i), "t1", name3)),
-                                                    datasources = opals)
-                
-                # dsSwissKnifeClient::dssSubset("m_t1",
-                #                               "m_t1",
-                #                               col.filter = paste0("c('person_id', '", 
-                #                                                   paste0(name4, "_minus_t1"),
-                #                                                   "')"),
-                #                               datasources = opals)
-            }
+            # calculate differences
+            dsSwissKnifeClient::dssDeriveColumn("m_t1",
+                                                paste0(name3, "_pct_diff_from_t1"),
+                                                paste0("((", 
+                                                       name3,
+                                                       " - ", 
+                                                       gsub(paste0("t", i), "t1", name3),
+                                                       ") / ", 
+                                                       gsub(paste0("t", i), "t1", name3), 
+                                                       ") * 100"),
+                                                datasources = opals)
+
+            dsSwissKnifeClient::dssDeriveColumn("m_t1",
+                                                paste0(name3, "_minus_t1"), 
+                                                paste0(name3, " - ", gsub(paste0("t", i), "t1", name3)),
+                                                datasources = opals)
             
             # merge with 'baseline'
             dsSwissKnifeClient::dssJoin(c("m_t1", "baseline"),
@@ -250,56 +227,34 @@ dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all", difference = "p
                                             join.type = "full",
                                             datasources = opals)
                 
-                # calculate difference
-                if (difference == "percentage") {
-                    
-                    dsSwissKnifeClient::dssDeriveColumn("m_t1",
-                                                        paste0(name3, "_pct_diff_from_t1"),
-                                                        paste0("((", 
-                                                               name3,
-                                                               " - ", 
-                                                               gsub(paste0("t", i), "t1", name3),
-                                                               ") / ", 
-                                                               gsub(paste0("t", i), "t1", name3), 
-                                                               ") * 100"),
-                                                        datasources = opals)
-                    
-                    # dsSwissKnifeClient::dssSubset("m_t1",
-                    #                               "m_t1",
-                    #                               col.filter = paste0("c('person_id', '",
-                    #                                                   paste0(name5, "_pct_diff_from_t1"),
-                    #                                                   "')"),
-                    #                               datasources = opals)
-                    
-                } else {
-                    
-                    dsSwissKnifeClient::dssDeriveColumn("m_t1",
-                                                        paste0(name3, "_minus_t1"), 
-                                                        paste0(name3, " - ", gsub(paste0("t", i), "t1", name3)),
-                                                        datasources = opals)
-                    
-                    # dsSwissKnifeClient::dssSubset("m_t1",
-                    #                               "m_t1",
-                    #                               col.filter = paste0("c('person_id', '", 
-                    #                                                   paste0(name4, "_minus_t1"),
-                    #                                                   "')"),
-                    #                               datasources = opals)
-                }
+                # calculate differences
+                dsSwissKnifeClient::dssDeriveColumn("m_t1",
+                                                    paste0(name3, "_pct_diff_from_t1"),
+                                                    paste0("((", 
+                                                           name3,
+                                                           " - ", 
+                                                           gsub(paste0("t", i), "t1", name3),
+                                                           ") / ", 
+                                                           gsub(paste0("t", i), "t1", name3), 
+                                                           ") * 100"),
+                                                    datasources = opals)
                 
-                # merge with 'baseline'
-                dsSwissKnifeClient::dssJoin(c("m_t1", "baseline"),
-                                            symbol = "baseline",
-                                            by = "person_id",
-                                            join.type = "full",
-                                            datasources = opals)
-                
-                # remove temporary data frame
-                dsBaseClient::ds.rm("m_t1")
-                
+                dsSwissKnifeClient::dssDeriveColumn("m_t1",
+                                                    paste0(name3, "_minus_t1"), 
+                                                    paste0(name3, " - ", gsub(paste0("t", i), "t1", name3)),
+                                                    datasources = opals)
+
             }
+            
+            # merge with 'baseline'
+            dsSwissKnifeClient::dssJoin(c("m_t1", "baseline"),
+                                        symbol = "baseline",
+                                        by = "person_id",
+                                        join.type = "full",
+                                        datasources = opals)
         }
     }
 
-    # remove remaining temporary data frames
-    dsBaseClient::ds.rm(c("m", "mw"))
+    # remove temporary data frames
+    dsBaseClient::ds.rm(c("m_t1", "m", "mw"))
 }
