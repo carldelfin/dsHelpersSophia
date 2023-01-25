@@ -42,156 +42,22 @@ dshSophiaCreateBaseline <- function(concept_id) {
         stop("No measurement table concept IDs specified, aborting...")
     }
     
-    # ----------------------------------------------------------------------------------------------
-    # get date of first measurement (i.e. the baseline)
-    # ----------------------------------------------------------------------------------------------
-    
-    # load measurement table
-    dsQueryLibrary::dsqLoad(symbol = "m",
-                            domain = "concept_name",
-                            query_name = "measurement",
-                            union = TRUE,
-                            datasources = opals)
-    
-    # order by date and person id
-    dsSwissKnifeClient::dssSubset("m",
-                                  "m",
-                                  "order(person_id, measurement_date)",
-                                  async = TRUE)
-    
-    # derive numeric date columns
-    dsSwissKnifeClient::dssDeriveColumn("m", 
-                                        "measurement_date_n",
-                                        "as.numeric(as.Date(measurement_date))")
-    
-    dsSwissKnifeClient::dssDeriveColumn("m", 
-                                        "f", 
-                                        "'irst_measurement_dat.e'")
-    
-    # pivot and select first measurement, which is now the first available date
-    dsSwissKnifeClient::dssPivot(symbol = "m_date",
-                                 what = "m",
-                                 value.var = "measurement_date_n",
-                                 formula = "person_id ~ f",
-                                 by.col = "person_id",
-                                 fun.aggregate = function(x) x[1],
-                                 async = TRUE,
-                                 datasources = opals)
-    
-    # remove temporary data frame
-    dsBaseClient::ds.rm("m")
-    
-    # ----------------------------------------------------------------------------------------------
-    # get baseline clinical variables from measurement table
-    # ----------------------------------------------------------------------------------------------
-    
-    # create SQL statement
-    where_clause <- paste(concept_id, collapse = ",")
-    where_clause <- paste0("measurement_concept_id in (", where_clause, ")")
-    
-    # load temporary measurement data
-    dsQueryLibrary::dsqLoad(symbol = "m_tmp",
-                            domain = "concept_name",
-                            query_name = "measurement",
-                            where_clause = where_clause,
-                            union = TRUE,
-                            datasources = opals)
-    
-    # make sure it is ordered by ID and measurement data
-    dsSwissKnifeClient::dssSubset("m_tmp",
-                                  "m_tmp", 
-                                  "order(person_id, measurement_date)")
-    
-    # pivot to select the first measurement
-    dsSwissKnifeClient::dssPivot(symbol = "m_tmp_t1",
-                                 what = "m_tmp",
-                                 value.var = "value_as_number",
-                                 formula = "person_id ~ measurement_name",
-                                 by.col = "person_id",
-                                 fun.aggregate = function(x) x[1],
-                                 datasources = opals)
-    
-    # join with date, create a new data frame called 'baseline'
-    dsSwissKnifeClient::dssJoin(c("m_date", "m_tmp_t1"), 
-                                symbol = "baseline",
-                                by = "person_id",
-                                join.type = "inner",
-                                datasources = opals)
-    
-    # remove temporary data frames
-    dsBaseClient::ds.rm("m_tmp")
-    dsBaseClient::ds.rm("m_tmp_t1")
-    
     # --------------------------------------------------------------------------------------------------
-    # add age and gender from person table
+    # get year of birth and gender from person table
     # --------------------------------------------------------------------------------------------------
     
     # load person table
-    dsQueryLibrary::dsqLoad(symbol = "p",
+    dsQueryLibrary::dsqLoad(symbol = "baseline",
                             domain = "concept_name",
                             query_name = "person",
                             union = TRUE,
                             datasources = opals,
                             async = TRUE)
     
-    # join with 'date' data frame
-    dsSwissKnifeClient::dssJoin(c("p", "m_date"),
-                                symbol = "p_age", 
-                                by = "person_id", 
-                                join.type = "inner")
-    
-    # derive approximate age at baseline
-    dsSwissKnifeClient::dssDeriveColumn("p_age",
-                                        "age_baseline", 
-                                        "round((f.irst_measurement_dat.e - as.numeric(as.Date(birth_datetime)))/365)")
-    
     # keep only columns we need
-    dsSwissKnifeClient::dssSubset("p_age",
-                                  "p_age",
-                                  col.filter = "c('person_id', 'gender', 'age_baseline')",
-                                  datasources = opals)
-    
-    # join with 'baseline'
-    dsSwissKnifeClient::dssJoin(c("p_age", "baseline"), 
-                                symbol = "baseline",
-                                by = "person_id",
-                                join.type = "inner",
-                                datasources = opals)
-    
-    # remove temporary data frames
-    dsBaseClient::ds.rm("p_age")
-    dsBaseClient::ds.rm("p")
-    dsBaseClient::ds.rm("m_date")
-    
-    # --------------------------------------------------------------------------------------------------
-    # clean up column names
-    # --------------------------------------------------------------------------------------------------
-    
-    column_names <- dsBaseClient::ds.colnames("baseline")
-    column_names <- grep("measurement_name", column_names[[1]], value = TRUE)
-    
-    for (i in column_names) {
-        
-        name1 <- i
-        name2 <- gsub("measurement_name.", "", name1)
-        name3 <- gsub("\\.", "_", name2)
-        name4 <- tolower(gsub("\\__", "_", name3))
-        name5 <- gsub("__", "_", name4)
-        
-        dsSwissKnifeClient::dssDeriveColumn("baseline",
-                                            name5,
-                                            name1,
-                                            datasources = opals)
-    }
-    
     dsSwissKnifeClient::dssSubset("baseline",
                                   "baseline",
-                                  col.filter = '!grepl("measurement_name", colnames(baseline))',
-                                  datasources = opals)
-    
-    dsSwissKnifeClient::dssSubset("baseline",
-                                  "baseline",
-                                  col.filter = '!grepl("f.irst_measurement_dat.e", colnames(baseline))',
+                                  col.filter = "c('person_id', 'gender', 'year_of_birth')",
                                   datasources = opals)
 
 }
