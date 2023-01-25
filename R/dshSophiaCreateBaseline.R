@@ -19,7 +19,7 @@
 #' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaCreateBaseline <- function(concept_id) {
+dshSophiaCreateBaseline <- function() {
 
     # ----------------------------------------------------------------------------------------------
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
