@@ -141,7 +141,7 @@ dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all") {
             
             # calculate differences
             dsSwissKnifeClient::dssDeriveColumn("m_t1",
-                                                paste0(name3, "_pct_diff_from_t1"),
+                                                paste0(name3, "_pct_change_from_t1"),
                                                 paste0("((", 
                                                        name3,
                                                        " - ", 
@@ -152,7 +152,7 @@ dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all") {
                                                 datasources = opals)
 
             dsSwissKnifeClient::dssDeriveColumn("m_t1",
-                                                paste0(name3, "_minus_t1"), 
+                                                paste0(name3, "_raw_change_from_t1"), 
                                                 paste0(name3, " - ", gsub(paste0("t", i), "t1", name3)),
                                                 datasources = opals)
             
@@ -229,7 +229,7 @@ dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all") {
                 
                 # calculate differences
                 dsSwissKnifeClient::dssDeriveColumn("m_t1",
-                                                    paste0(name3, "_pct_diff_from_t1"),
+                                                    paste0(name3, "_pct_change_from_t1"),
                                                     paste0("((", 
                                                            name3,
                                                            " - ", 
@@ -240,7 +240,7 @@ dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all") {
                                                     datasources = opals)
                 
                 dsSwissKnifeClient::dssDeriveColumn("m_t1",
-                                                    paste0(name3, "_minus_t1"), 
+                                                    paste0(name3, "_raw_change_from_t1"), 
                                                     paste0(name3, " - ", gsub(paste0("t", i), "t1", name3)),
                                                     datasources = opals)
 
