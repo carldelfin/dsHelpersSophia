@@ -19,7 +19,7 @@
 #' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaCreateBaseline <- function() {
+dshSophiaCreateBaseline <- function(procedure_id = NULL) {
 
     # ----------------------------------------------------------------------------------------------
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
@@ -54,5 +54,55 @@ dshSophiaCreateBaseline <- function() {
                                   "baseline",
                                   col.filter = "c('person_id', 'gender', 'year_of_birth')",
                                   datasources = opals)
-
+    
+    if (!is.null(procedure_id)) {
+        
+        for (i in procedure_id) {
+            
+            p_clause <- paste0("procedure_concept_id in ('", i, "')")
+            
+            dsQueryLibrary::dsqLoad(symbol = "p",
+                                    domain = "concept_name",
+                                    query_name = "procedure_occurrence",
+                                    where_clause = p_clause,
+                                    union = TRUE,
+                                    datasources = opals)
+            
+            dssDeriveColumn("p",
+                            "outcome1", 
+                            "1")
+            
+            dssDeriveColumn("baseline",
+                            "outcome0", 
+                            "0")
+            
+            dssJoin(c("p", "baseline"), 
+                    symbol = "tmp",
+                    by = "person_id",
+                    join.type = "full",
+                    datasources = opals)
+            
+            ds.Boole(V1 = "tmp$outcome1",
+                     V2 = "tmp$outcome0",
+                     Boolean.operator = ">",
+                     numeric.output = TRUE,
+                     na.assign = "0",      
+                     newobj = "outcome_bool",
+                     datasources = opals)
+            
+            ds.asFactor(input.var.name = "outcome_bool",
+                        newobj.name = "outcome_fct",
+                        datasources = opals)
+            
+            dssDeriveColumn("baseline",
+                            paste0("has_procedure_", i), 
+                            "outcome_fct")
+            
+            dssSubset("baseline",
+                      "baseline",
+                      col.filter = '!(colnames(baseline) %in% c("outcome0"))',
+                      datasources = opals)
+            
+        }
+    }
 }
