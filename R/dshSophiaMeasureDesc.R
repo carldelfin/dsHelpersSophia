@@ -96,6 +96,7 @@ dshSophiaMeasureDesc <- function(variable, procedure_id = NA) {
         
     } else {
         
+        tmp_summary <- tmp_summary[[1]]
         tmp_var <- dsBaseClient::ds.var(paste0("baseline_tmp$", variable))
         tmp_range <- dsSwissKnifeClient::dssRange(paste0("baseline_tmp$", variable))
         time <- stringr::str_split(variable, "_", n = 3)[[1]][[1]]
