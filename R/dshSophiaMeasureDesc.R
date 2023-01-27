@@ -13,10 +13,10 @@
 #' # get descriptive information about BMI
 #' df <- dshSophiaMeasureDesc(concept_id = 3038553)
 #' }
-#' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dplyr
+#' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dsSwissKnifeClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaMeasureDesc <- function(concept_id, procedure_id = NULL) {
+dshSophiaMeasureDesc <- function(variable, procedure_id = NULL) {
 
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
     # the user probably did not run dshSophiaConnect() yet. Here the user may do so, after 
@@ -31,154 +31,98 @@ dshSophiaMeasureDesc <- function(concept_id, procedure_id = NULL) {
                stop("Aborting..."))
     }
     
-    tryCatch(
-        expr = { 
-            # SQL statement
-            where_clause <- paste0("measurement_concept_id in ('", concept_id, "')")
-            
-            # load the measurement table
-            dsQueryLibrary::dsqLoad(symbol = "m",
-                    domain = "concept_name",
-                    query_name = "measurement",
-                    where_clause = where_clause,
-                    union = TRUE,
-                    datasources = opals)
-        },
-        error = function(e) { 
-            message("\nUnable to load measurement table, maybe the variable doesn't exist or you forgot to run 'dshSophiaLoad()'?")
-    })
-
-    # make sure it is ordered by ID and measurement data
-    dsSwissKnifeClient::dssSubset("m",
-                                  "m",
-                                  "order(person_id, measurement_date)")
-    
-    # subset by group?
+    # grouped by procedure?
     if (!is.null(procedure_id)) {
         
-        p_clause <- paste0("procedure_concept_id in ('", procedure_id, "')")
+        # subset to procedure and variable
+        dsSwissKnifeClient::dssSubset("baseline_tmp",
+                                      "baseline",
+                                      col.filter = paste0("c('", variable, "', 'has_", procedure_id, "')"),
+                                      datasources = opals)
         
-        dsQueryLibrary::dsqLoad(symbol = "p",
-                                    domain = "concept_name",
-                                    query_name = "procedure_occurrence",
-                                    where_clause = p_clause,
-                                    union = TRUE,
-                                    datasources = opals)
-        
-        dsSwissKnifeClient::dssSubset("m",
-                                      "m",
-                                      row.filter = "person_id %in% p$person_id")
-    }
-    
-    # check how many time points we have
-    dsSwissKnifeClient::dssPivot(symbol = "mw",
-                                 what = "m",
-                                 value.var = "value_as_number",
-                                 formula = "person_id ~ measurement_name",
-                                 by.col = "person_id",
-                                 fun.aggregate = length,
-                                 datasources = opals)
-    
-    concept_name <- dsBaseClient::ds.summary("mw")[[1]][[4]][2]
-    num_timepoints <- dsBaseClient::ds.summary(paste0("mw$", concept_name))[[1]][[3]][[7]]
-    
-    # temporary results storage
-    res <- NULL
-    
-    # loop through time points and gather results
-    for (i in 1:num_timepoints) {
-        
-        # aggregation function for selecting the ith measurement
-        aggr <- paste0("function(x) x[", i, "]")
-        
-        # pivot and take ith measurement
-        dsSwissKnifeClient::dssPivot(symbol = paste0("m_t", i),
-                                     what = "m",
-                                     value.var = "value_as_number",
-                                     formula = "person_id ~ measurement_name",
-                                     by.col = "person_id",
-                                     fun.aggregate = eval(parse(text = aggr)),
-                                     datasources = opals)
-        
-        # remove missing
-        dsBaseClient::ds.completeCases(x1 = paste0("m_t", i),
-                                       newobj = paste0("m_t", i),
+        # remove NAs (i.e., those without procedure _and_ those with missing measurements)
+        dsBaseClient::ds.completeCases(x1 = "baseline_tmp",
+                                       newobj = "baseline_tmp",
                                        datasources = opals)
         
-        # calculate average time difference
-        if (i > 1) {
+    } else {
+        
+        # subset to variable and person_id
+        dsSwissKnifeClient::dssSubset("baseline_tmp",
+                                      "baseline",
+                                      col.filter = paste0("c('person_id', '", variable, "')"),
+                                      datasources = opals)
+        
+        # remove NAs
+        dsBaseClient::ds.completeCases(x1 = "baseline_tmp",
+                                       newobj = "baseline_tmp",
+                                       datasources = opals)
+    }
+    
+    # gather all summary data into data frame
+    tmp_summary <- dsBaseClient::ds.summary(paste0("baseline_tmp$", variable))[[1]]
+    concept_id <- stringr::str_split(variable, "_", n = 3)[[1]][[2]]
+    
+    # make sure we have at least five valid measurements (for disclosure reasons)
+    if (tmp_summary[[2]] < 5) {
+        
+        out <- data.frame(concept_id = concept_id,
+                          time = NA,
+                          type = NA,
+                          n = NA,
+                          mean = NA,
+                          sd = NA,
+                          se = NA,
+                          median = NA,
+                          q1 = NA,
+                          q3 = NA,
+                          iqr = NA,
+                          min = NA,
+                          max = NA)
+        
+    } else {
+        
+        tmp_var <- dsBaseClient::ds.var(paste0("baseline_tmp$", variable))
+        tmp_range <- dsSwissKnifeClient::dssRange(paste0("baseline_tmp$", variable))
+        time <- stringr::str_split(variable, "_", n = 3)[[1]][[1]]
+        
+        if (length(stringr::str_split(variable, "_", n = 3)[[1]]) == 2) {
             
-            # aggregation function for time difference
-            aggr <- paste0("function(x) as.numeric(as.Date(x[", i, "]) - as.Date(x[1]))")
-            
-            dsSwissKnifeClient::dssPivot(symbol = "tdiff",
-                                         what = "m",
-                                         value.var = "measurement_date",
-                                         formula = "person_id ~ measurement_name",
-                                         by.col = "person_id",
-                                         fun.aggregate = eval(parse(text = aggr)),
-                                         datasources = opals)
-            
-            # remove any missing (there shouldn't be any)
-            dsBaseClient::ds.completeCases(x1 = "tdiff",
-                                           newobj = "tdiff",
-                                           datasources = opals)
-            
-            # only time differences where the baseline value is > 0 UNIX time is allowed
-            # (this is due to many cohorts using datetime 1900-01-01 as placeholder for missing)
-            dsSwissKnifeClient::dssSubset(symbol = "tdiff",
-                                          what = "tdiff",
-                                          row.filter = paste0("tdiff$", concept_name, " < ", as.numeric(Sys.Date() - as.Date("1970-01-01"))),
-                                          datasources = opals)
-            
-            # mean number of days/months between timepoint 1 and timepoint i
-            mean_days_from_baseline <- dsBaseClient::ds.summary(paste0("tdiff$", concept_name))[[1]][[3]][[4]]
-            mean_months_from_baseline <- round(mean_days_from_baseline / 30, 0)
+            type <- "raw_score"
             
         } else {
             
-            # if we're at timepoint 1 then these are zero
-            mean_days_from_baseline <- 0
-            mean_months_from_baseline <- 0
+            type <- stringr::str_split(variable, "_", n = 3)[[1]][[3]]
             
         }
         
-        # gather all summary data into data frame
-        tmp <- dsBaseClient::ds.summary(paste0("m_t", i, "$", concept_name))[[1]][[3]]
+        out <- data.frame(concept_id = concept_id,
+                          time = time,
+                          type = type,
+                          n = tmp_var[[1]][[3]],
+                          mean = tmp_summary[[3]][[8]],
+                          sd = sqrt(tmp_var[[1]][[1]]),
+                          se = sqrt(tmp_var[[1]][[1]]) / sqrt(tmp_var[[1]][[4]]),
+                          median = tmp_summary[[3]][[4]],
+                          q1 = tmp_summary[[3]][[3]],
+                          q3 = tmp_summary[[3]][[5]],
+                          iqr = tmp_summary[[3]][[5]] - tmp_summary[[3]][[3]],
+                          min = tmp_range[[1]][[1]][[1]],
+                          max = tmp_range[[1]][[1]][[2]])
         
-        out <- data.frame(time = i,
-                          mean_days_from_baseline = mean_days_from_baseline,
-                          mean_months_from_baseline = mean_months_from_baseline,
-                          n = dsSwissKnifeClient::dssVar(paste0("m_t", i, "$", concept_name))[[1]][[2]],
-                          mean = tmp[[8]],
-                          sd = sqrt(dsSwissKnifeClient::dssVar(paste0("m_t", i, "$", concept_name))[[1]][[1]]),
-                          median = tmp[[4]],
-                          q1 = tmp[[3]],
-                          q3 = tmp[[5]],
-                          iqr = tmp[[5]] - tmp[[3]],
-                          min = dsSwissKnifeClient::dssRange(paste0("m_t", i, "$", concept_name))[[1]][[1]][[1]],
-                          max = dsSwissKnifeClient::dssRange(paste0("m_t", i, "$", concept_name))[[1]][[1]][[2]])
-        
-        res <- rbind(res, out)
     }
     
-    # tidy up the output
-    res <- res |>
-        dplyr::mutate(concept_id = concept_id,
-                      concept_name = gsub("measurement_name.", "", concept_name),
-                      mean_pct_change = -(100 - (mean/mean[1L]) * 100)) |>
-        dplyr::select(concept_id, concept_name, time, 
-                      mean_days_from_baseline, mean_months_from_baseline,
-                      n, mean, mean_pct_change, sd, median, 
-                      q1, q3, iqr, min, max)
-    
-    # are results grouped?
+    # add procedure
     if (!is.null(procedure_id)) {
-        res <- res |>
-            dplyr::mutate(procedure_id = procedure_id) |>
-            dplyr::select(procedure_id, dplyr::everything())
+        
+        out$procedure <- procedure_id
+        
+    } else {
+        
+        out$procedure <- NA
+        
     }
     
-    return(res)
+    return(out)
 
 }
