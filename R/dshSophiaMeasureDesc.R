@@ -62,7 +62,7 @@ dshSophiaMeasureDesc <- function(variable, procedure_id = NA) {
     concept_id <- stringr::str_split(variable, "_", n = 3)[[1]][[2]]
     tmp_summary <- dsBaseClient::ds.summary(paste0("baseline_tmp$", variable))
     
-    if (tmp_summary[[1]] == "INVALID object!") {
+    if (length(tmp_summary[[1]]) == 1) {
         
         out <- data.frame(concept_id = concept_id,
                           time = NA,
