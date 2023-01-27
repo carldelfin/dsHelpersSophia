@@ -59,12 +59,26 @@ dshSophiaMeasureDesc <- function(variable, procedure_id = NA) {
                                        datasources = opals)
     }
     
-    # gather all summary data into data frame
-    tmp_summary <- dsBaseClient::ds.summary(paste0("baseline_tmp$", variable))[[1]]
     concept_id <- stringr::str_split(variable, "_", n = 3)[[1]][[2]]
+    tmp_summary <- dsBaseClient::ds.summary(paste0("baseline_tmp$", variable))
     
-    # make sure we have at least five valid measurements (for disclosure reasons)
-    if (tmp_summary[[2]] < 5) {
+    if (tmp_summary[[1]] == "INVALID object!") {
+        
+        out <- data.frame(concept_id = concept_id,
+                          time = NA,
+                          type = NA,
+                          n = NA,
+                          mean = NA,
+                          sd = NA,
+                          se = NA,
+                          median = NA,
+                          q1 = NA,
+                          q3 = NA,
+                          iqr = NA,
+                          min = NA,
+                          max = NA)
+        
+    } else if (tmp_summary[[1]][[2]] < 5) {
         
         out <- data.frame(concept_id = concept_id,
                           time = NA,

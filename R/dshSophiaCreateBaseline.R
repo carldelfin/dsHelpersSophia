@@ -52,7 +52,7 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL) {
     # keep only columns we need
     dsSwissKnifeClient::dssSubset("baseline",
                                   "baseline",
-                                  col.filter = "c('person_id', 'gender', 'year_of_birth')",
+                                  col.filter = "colnames(baseline) %in% c('person_id', 'gender', 'year_of_birth', 'birth_datetime')",
                                   datasources = opals)
     
     if (!is.null(procedure_id)) {
