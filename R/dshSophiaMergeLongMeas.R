@@ -19,7 +19,7 @@
 #' # check result
 #' dsBaseClient::ds.summary("baseline")
 #' }
-#' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dplyr
+#' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dsSwissKnifeClient dplyr
 #' @importFrom utils menu 
 #' @export
 dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all") {
@@ -162,9 +162,6 @@ dshSophiaMergeLongMeas <- function(concept_id, endpoint = "all") {
                                         by = "person_id",
                                         join.type = "full",
                                         datasources = opals)
-            
-            # remove temporary data frame
-            dsBaseClient::ds.rm("m_t1")
             
         } else {
             

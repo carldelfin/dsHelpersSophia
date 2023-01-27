@@ -68,6 +68,17 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL) {
                                     union = TRUE,
                                     datasources = opals)
             
+            # order by person id and date
+            dssSubset("p",
+                      "p", 
+                      "order(person_id)",
+                      async = FALSE)
+            
+            dssSubset("baseline",
+                      "baseline", 
+                      "order(person_id)",
+                      async = FALSE)
+            
             dsSwissKnifeClient::dssDeriveColumn("p",
                             "outcome1", 
                             "1")
