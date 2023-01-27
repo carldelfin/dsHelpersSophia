@@ -16,7 +16,7 @@
 #' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dsSwissKnifeClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaMeasureDesc <- function(variable, procedure_id = NULL) {
+dshSophiaMeasureDesc <- function(variable, procedure_id = NA) {
 
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
     # the user probably did not run dshSophiaConnect() yet. Here the user may do so, after 
@@ -32,7 +32,7 @@ dshSophiaMeasureDesc <- function(variable, procedure_id = NULL) {
     }
     
     # grouped by procedure?
-    if (!is.null(procedure_id)) {
+    if (!is.na(procedure_id)) {
         
         # subset to procedure and variable
         dsSwissKnifeClient::dssSubset("baseline_tmp",
