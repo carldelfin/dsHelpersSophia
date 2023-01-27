@@ -110,7 +110,6 @@ dshSophiaMergeLongMeas <- function(concept_id) {
             name3 <- paste0("t", i, "_", name2)
             
             # time difference
-            #aggr <- paste0("function(x) ifelse(as.numeric(as.Date(x[1])) > 0, as.numeric(as.Date(x[", i, "]) - as.Date(x[1])), NA)")
             aggr <- paste0("function(x) as.numeric(as.Date(x[", i, "]) - as.Date(x[1]))")
             
             dsSwissKnifeClient::dssPivot(symbol = "tdiff",
@@ -121,13 +120,21 @@ dshSophiaMergeLongMeas <- function(concept_id) {
                                          fun.aggregate = eval(parse(text = aggr)),
                                          datasources = opals)
             
+            concept_name <- dsBaseClient::ds.summary("tdiff")[[1]][[4]][[2]]
+            
             # remove missing
             dsBaseClient::ds.completeCases(x1 = "tdiff",
                                            newobj = "tdiff",
                                            datasources = opals)
             
+            # remove unrealistic values
+            # (8000 is approx. number of days from 2000-01-01 to today)
+            dsSwissKnifeClient::dssSubset("tdiff",
+                                          "tdiff",
+                                          row.filter = paste0("tdiff$", concept_name, " < 8000"),
+                                          datasources = opals)
+            
             # create new time from t1 column
-            concept_name <- dsBaseClient::ds.summary("tdiff")[[1]][[4]][[2]]
             dsSwissKnifeClient::dssDeriveColumn("tdiff",
                                                 paste0(name3, "_days_since_t1"),
                                                 concept_name,
