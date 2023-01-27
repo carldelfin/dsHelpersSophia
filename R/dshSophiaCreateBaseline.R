@@ -68,55 +68,71 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL) {
                                     union = TRUE,
                                     datasources = opals)
             
-            # order by person id and date
-            dssSubset("p",
-                      "p", 
-                      "order(person_id)",
-                      async = FALSE)
-            
-            dssSubset("baseline",
-                      "baseline", 
-                      "order(person_id)",
-                      async = FALSE)
-            
             dsSwissKnifeClient::dssDeriveColumn("p",
-                            "outcome1", 
-                            "1")
+                                                paste0("has_", i), 
+                                                "1")
+
+            dsSwissKnifeClient::dssSubset("p",
+                                          "p",
+                                          col.filter = paste0("c('person_id', 'has_", i, "')"),
+                                          datasources = opals)
             
-            dsSwissKnifeClient::dssDeriveColumn("baseline",
-                            "outcome0", 
-                            "0")
-            
-            dsSwissKnifeClient::dssJoin(c("p", "baseline"), 
-                    symbol = "tmp",
-                    by = "person_id",
-                    join.type = "full",
-                    datasources = opals)
-            
-            dsBaseClient::ds.Boole(V1 = "tmp$outcome1",
-                     V2 = "tmp$outcome0",
-                     Boolean.operator = ">",
-                     numeric.output = TRUE,
-                     na.assign = "0",      
-                     newobj = "outcome_bool",
-                     datasources = opals)
-            
-            dsBaseClient::ds.asFactor(input.var.name = "outcome_bool",
-                        newobj.name = "outcome_fct",
-                        datasources = opals)
-            
-            dsSwissKnifeClient::dssDeriveColumn("baseline",
-                            paste0("has_procedure_", i), 
-                            "outcome_fct")
-            
-            dsSwissKnifeClient::dssSubset("baseline",
-                      "baseline",
-                      col.filter = '!(colnames(baseline) %in% c("outcome0"))',
-                      datasources = opals)
-            
+            # merge with 'baseline'
+            dsSwissKnifeClient::dssJoin(c("p", "baseline"),
+                                        symbol = "baseline",
+                                        by = "person_id",
+                                        join.type = "full",
+                                        datasources = opals)
+    
+            # # order by person id and date
+            # dssSubset("p",
+            #           "p", 
+            #           "order(person_id)",
+            #           async = FALSE)
+            # 
+            # dssSubset("baseline",
+            #           "baseline", 
+            #           "order(person_id)",
+            #           async = FALSE)
+            # 
+            # dsSwissKnifeClient::dssDeriveColumn("p",
+            #                 "outcome1", 
+            #                 "1")
+            # 
+            # dsSwissKnifeClient::dssDeriveColumn("baseline",
+            #                 "outcome0", 
+            #                 "0")
+            # 
+            # dsSwissKnifeClient::dssJoin(c("p", "baseline"), 
+            #         symbol = "tmp",
+            #         by = "person_id",
+            #         join.type = "full",
+            #         datasources = opals)
+            # 
+            # dsBaseClient::ds.Boole(V1 = "tmp$outcome1",
+            #          V2 = "tmp$outcome0",
+            #          Boolean.operator = ">",
+            #          numeric.output = TRUE,
+            #          na.assign = "0",      
+            #          newobj = "outcome_bool",
+            #          datasources = opals)
+            # 
+            # dsBaseClient::ds.asFactor(input.var.name = "outcome_bool",
+            #             newobj.name = "outcome_fct",
+            #             datasources = opals)
+            # 
+            # dsSwissKnifeClient::dssDeriveColumn("baseline",
+            #                 paste0("has_procedure_", i), 
+            #                 "outcome_fct")
+            # 
+            # dsSwissKnifeClient::dssSubset("baseline",
+            #           "baseline",
+            #           col.filter = '!(colnames(baseline) %in% c("outcome0"))',
+            #           datasources = opals)
+            # 
         }
     }
     
-    dsBaseClient::ds.rm(c("tmp", "p", "outcome_bool", "outcome_fct"))
+    #dsBaseClient::ds.rm(c("tmp", "p", "outcome_bool", "outcome_fct"))
     
 }
