@@ -106,7 +106,7 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
     # get a temporary summary
     tmp <- dsBaseClient::ds.summary(paste0("baseline_tmp$", predictor))
     
-    # numeric outcome?
+    # numeric outcome
     if (tmp[[1]][[1]] == "numeric") {
       
         # if outcome is NA, Inf, or have mean == 0, return empty
@@ -165,7 +165,8 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
                               ci.high = coefs[[6]])
             
         }
-          
+    
+    # factor outcome
     } else {
         
         # scale if standardized output is requested (default is TRUE)
@@ -196,10 +197,15 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
                                     viewCor = FALSE,
                                     datasources = opals)
         
+        # num factor levels
+        # (only works for two-level factors?)
+        num_levels <- length(tmp[[1]][[3]])
+        last_level <- tmp[[1]][[3]][[num_levels]]
+        
         # get relevant results and put into data frame
         coefs <- as.data.frame(mod$coefficients)
         coefs$predictor <- rownames(coefs)
-        coefs <- coefs[coefs$predictor == predictor, ]
+        coefs <- coefs[coefs$predictor == paste0(predictor, last_level), ]
         
         out <- data.frame(outcome = outcome,
                           predictor = predictor,
