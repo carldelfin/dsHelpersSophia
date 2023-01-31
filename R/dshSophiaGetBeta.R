@@ -22,7 +22,7 @@
 #' @import DSOpal opalr httr DSI dsBaseClient dsSwissKnifeClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaGetBeta <- function(outcome, predictor, coviariate, subset_procedure = FALSE, standardized = TRUE) {
+dshSophiaGetBeta <- function(outcome, predictor, covariate, subset_procedure = FALSE, standardized = TRUE) {
     
     # ----------------------------------------------------------------------------------------------
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
