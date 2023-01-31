@@ -1,0 +1,130 @@
+#' Merge a (longitudinal) measurement table variable with the federated 'baseline' data frame
+#'
+#' Given a valid measurement table Concept ID, the function merges that variable (in wide format) with the 'baseline' data frame on the federated node. Note that the 'baseline' data frame must already exist. If the variable is available across several time points, all time points are included, and the raw difference plus percentage change from time point 1 to timepoint X is calculated.
+#' @return Nothing, the federated 'baseline' data frame is appended.
+#' @examples
+#' \dontrun{
+#' # connect to the federated system
+#' dshSophiaConnect()
+#'
+#' # load database resources
+#' dshSophiaLoad()
+#'
+#' # create a 'baseline' data frame on the federated node
+#' dshSophiaCreateBaseline(concept_id = c(4111665, 3004410, 3001308))
+#' 
+#' # add a longitudinal measure
+#' dshSophiaMergeLongMeas(concept_id = 3038553)
+#' 
+#' # check result
+#' dsBaseClient::ds.summary("baseline")
+#' }
+#' @import DSOpal opalr httr DSI dsBaseClient dsSwissKnifeClient dplyr
+#' @importFrom utils menu 
+#' @export
+dshSophiaGetBeta <- function(outcome, predictor, coviariate, subset_procedure = FALSE, standardized = TRUE) {
+    
+    # ----------------------------------------------------------------------------------------------
+    # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
+    # the user probably did not run dshSophiaConnect() yet. Here the user may do so, after 
+    # being prompted for username and password.
+    # ----------------------------------------------------------------------------------------------
+    
+    if (exists("opals") == FALSE || exists("nodes_and_cohorts") == FALSE) {
+        cat("")
+        cat("No 'opals' and/or 'nodes_and_cohorts' object found\n")
+        cat("You probably did not run 'dshSophiaConnect' yet, do you wish to do that now?\n")
+        switch(menu(c("Yes", "No (abort)")) + 1,
+               cat("Test"), 
+               dshSophiaPrompt(),
+               stop("Aborting..."))
+    }
+    
+    # create subset formula
+    if (subset_procedure == FALSE) {
+        
+        cols <- paste0("colnames(baseline) %in% c('",
+                       outcome,
+                       "', '",
+                       predictor,
+                       "', '",
+                       paste0(covariate, collapse = "', '"),
+                       "')")
+        
+    } else {
+        
+        cols <- paste0("colnames(baseline) %in% c('",
+                       subset_procedure,
+                       "', '",
+                       outcome,
+                       "', '",
+                       predictor,
+                       "', '",
+                       paste0(covariate, collapse = "', '"),
+                       "')")
+    }
+    
+    # subset
+    dsSwissKnifeClient::dssSubset("baseline_tmp", 
+                                  "baseline",
+                                  col.filter = cols,
+                                  datasources = opals)
+    
+    # remove NAs
+    dsBaseClient::ds.completeCases(x1 = "baseline_tmp",
+                                   newobj = "baseline_tmp",
+                                   datasources = opals)
+    
+    # get a temporary summary
+    tmp <- dsBaseClient::ds.summary(paste0("baseline_tmp$", predictor))
+    
+    # if outcome is NA, Inf, or have mean == 0, return empty
+    if (is.na(tmp[[1]][[3]][[8]]) | tmp[[1]][[3]][[8]] == 0 | tmp[[1]][[3]][[8]] == Inf) {
+        
+        # get beta etc
+        out <- data.frame(predictor = predictor,
+                          valid_n = NA,
+                          beta = NA,
+                          p.value = NA,
+                          ci.low = NA,
+                          ci.high = NA)
+        
+    } else {
+        
+        # scale if standardized output is requested (default is TRUE)
+        if (standardized == TRUE) {
+            dsSwissKnifeClient::dssScale("baseline_tmp",
+                                         "baseline_tmp",
+                                         datasources = opals)
+            
+        }
+        
+        formula <- as.formula(paste0(outcome, " ~ 1 +", paste0(covariate, collapse = "+"), "+", predictor))
+        
+        mod <- dsBaseClient::ds.glm(formula = formula,
+                                    data = "baseline_tmp",
+                                    family = "gaussian",
+                                    maxit = 20,
+                                    CI = 0.95,
+                                    viewIter = FALSE,
+                                    viewVarCov = FALSE,
+                                    viewCor = FALSE,
+                                    datasources = opals)
+        
+        # get relevant results and put into data frame
+        coefs <- as.data.frame(mod$coefficients)
+        coefs$predictor <- rownames(coefs)
+        coefs <- coefs[coefs$predictor == predictor, ]
+        
+        out <- data.frame(predictor = predictor,
+                          valid_n = mod$Nvalid,
+                          beta = coefs[[2]],
+                          p.value = coefs[[5]],
+                          ci.low = coefs[[6]],
+                          ci.high = coefs[[7]])
+        
+    }
+    
+    return(out)
+    
+}

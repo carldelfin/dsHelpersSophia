@@ -4,7 +4,7 @@
 \alias{dshSophiaMeasureDesc}
 \title{Get descriptive information about a variable in the measurement table}
 \usage{
-dshSophiaMeasureDesc(concept_id, procedure_id = NULL)
+dshSophiaMeasureDesc(variable, procedure_id = NA)
 }
 \value{
 A data frame.
