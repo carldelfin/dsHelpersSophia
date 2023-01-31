@@ -106,18 +106,66 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
     # get a temporary summary
     tmp <- dsBaseClient::ds.summary(paste0("baseline_tmp$", predictor))
     
-    # if outcome is NA, Inf, or have mean == 0, return empty
-    if (is.na(tmp[[1]][[3]][[8]]) | tmp[[1]][[3]][[8]] == 0 | tmp[[1]][[3]][[8]] == Inf) {
-        
-        # get beta etc
-        out <- data.frame(outcome = outcome,
-                          predictor = predictor,
-                          valid_n = NA,
-                          beta = NA,
-                          p.value = NA,
-                          ci.low = NA,
-                          ci.high = NA)
-        
+    # numeric outcome?
+    if (tmp[[1]][[1]] == "numeric") {
+      
+        # if outcome is NA, Inf, or have mean == 0, return empty
+        if (is.na(tmp[[1]][[3]][[8]]) | tmp[[1]][[3]][[8]] == 0 | tmp[[1]][[3]][[8]] == Inf) {
+            
+            # get beta etc
+            out <- data.frame(outcome = outcome,
+                              predictor = predictor,
+                              valid_n = NA,
+                              beta = NA,
+                              p.value = NA,
+                              ci.low = NA,
+                              ci.high = NA)
+            
+        } else {
+            
+            # scale if standardized output is requested (default is TRUE)
+            if (standardized == TRUE) {
+                dsSwissKnifeClient::dssScale("baseline_tmp",
+                                             "baseline_tmp",
+                                             datasources = opals)
+                
+            }
+            
+            if (covariate == FALSE) {
+                
+                formula <- as.formula(paste0(outcome, " ~ 1 +", predictor))
+                
+            } else {
+                
+                formula <- as.formula(paste0(outcome, " ~ 1 +", paste0(covariate, collapse = "+"), "+", predictor))
+                
+            }
+            
+            mod <- dsBaseClient::ds.glm(formula = formula,
+                                        data = "baseline_tmp",
+                                        family = "gaussian",
+                                        maxit = 20,
+                                        CI = 0.95,
+                                        viewIter = FALSE,
+                                        viewVarCov = FALSE,
+                                        viewCor = FALSE,
+                                        datasources = opals)
+            
+            # get relevant results and put into data frame
+            coefs <- as.data.frame(mod$coefficients)
+            coefs$predictor <- rownames(coefs)
+            coefs <- coefs[coefs$predictor == predictor, ]
+            
+            out <- data.frame(outcome = outcome,
+                              predictor = predictor,
+                              valid_n = mod$Nvalid,
+                              beta = coefs[[1]],
+                              p.value = coefs[[4]],
+                              ci.low = coefs[[5]],
+                              ci.high = coefs[[6]])
+            
+        }
+          
     } else {
         
         # scale if standardized output is requested (default is TRUE)
