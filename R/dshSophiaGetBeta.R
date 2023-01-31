@@ -106,8 +106,8 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
     # get a temporary summary
     tmp <- dsBaseClient::ds.summary(paste0("baseline_tmp$", predictor))
     
-    # numeric outcome
-    if (tmp[[1]][[1]] == "numeric") {
+    # numeric/integer outcome
+    if (tmp[[1]][[1]] == "numeric" | tmp[[1]][[1]] == "integer") {
       
         # if outcome is NA, Inf, or have mean == 0, return empty
         if (is.na(tmp[[1]][[3]][[8]]) | tmp[[1]][[3]][[8]] == 0 | tmp[[1]][[3]][[8]] == Inf) {
