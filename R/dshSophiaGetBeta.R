@@ -82,7 +82,8 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate, subset_procedure = F
     if (is.na(tmp[[1]][[3]][[8]]) | tmp[[1]][[3]][[8]] == 0 | tmp[[1]][[3]][[8]] == Inf) {
         
         # get beta etc
-        out <- data.frame(predictor = predictor,
+        out <- data.frame(outcome = outcome,
+                          predictor = predictor,
                           valid_n = NA,
                           beta = NA,
                           p.value = NA,
@@ -116,7 +117,8 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate, subset_procedure = F
         coefs$predictor <- rownames(coefs)
         coefs <- coefs[coefs$predictor == predictor, ]
         
-        out <- data.frame(predictor = predictor,
+        out <- data.frame(outcome = outcome,
+                          predictor = predictor,
                           valid_n = mod$Nvalid,
                           beta = coefs[[1]],
                           p.value = coefs[[4]],
