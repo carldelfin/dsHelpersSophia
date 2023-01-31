@@ -73,7 +73,7 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
                            "', '",
                            outcome,
                            "', '",
-                           predictor
+                           predictor,
                            "')")
             
         } else {
