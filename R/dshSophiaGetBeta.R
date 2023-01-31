@@ -128,7 +128,15 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
             
         }
         
-        formula <- as.formula(paste0(outcome, " ~ 1 +", paste0(covariate, collapse = "+"), "+", predictor))
+        if (covariate == FALSE) {
+            
+            formula <- as.formula(paste0(outcome, " ~ 1 +", predictor))
+            
+        } else {
+            
+            formula <- as.formula(paste0(outcome, " ~ 1 +", paste0(covariate, collapse = "+"), "+", predictor))
+            
+        }
         
         mod <- dsBaseClient::ds.glm(formula = formula,
                                     data = "baseline_tmp",
