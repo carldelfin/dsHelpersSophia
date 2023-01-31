@@ -118,10 +118,10 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate, subset_procedure = F
         
         out <- data.frame(predictor = predictor,
                           valid_n = mod$Nvalid,
-                          beta = coefs[[2]],
-                          p.value = coefs[[5]],
-                          ci.low = coefs[[6]],
-                          ci.high = coefs[[7]])
+                          beta = coefs[[1]],
+                          p.value = coefs[[4]],
+                          ci.low = coefs[[5]],
+                          ci.high = coefs[[6]])
         
     }
     
