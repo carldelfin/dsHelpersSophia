@@ -22,7 +22,7 @@
 #' @import DSOpal opalr httr DSI dsBaseClient dsSwissKnifeClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaGetBeta <- function(outcome, predictor, covariate, subset_procedure = FALSE, standardized = TRUE) {
+dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_procedure = FALSE, standardized = TRUE) {
     
     # ----------------------------------------------------------------------------------------------
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
@@ -43,25 +43,53 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate, subset_procedure = F
     # create subset formula
     if (subset_procedure == FALSE) {
         
-        cols <- paste0("colnames(baseline) %in% c('",
-                       outcome,
-                       "', '",
-                       predictor,
-                       "', '",
-                       paste0(covariate, collapse = "', '"),
-                       "')")
+        if (covariate == FALSE) {
+            
+            cols <- paste0("colnames(baseline) %in% c('",
+                           outcome,
+                           "', '",
+                           predictor,
+                           "')")
+            
+        } else {
+            
+            cols <- paste0("colnames(baseline) %in% c('",
+                           outcome,
+                           "', '",
+                           predictor,
+                           "', '",
+                           paste0(covariate, collapse = "', '"),
+                           "')")
+            
+        }
+        
         
     } else {
         
-        cols <- paste0("colnames(baseline) %in% c('",
-                       subset_procedure,
-                       "', '",
-                       outcome,
-                       "', '",
-                       predictor,
-                       "', '",
-                       paste0(covariate, collapse = "', '"),
-                       "')")
+        if (covariate == FALSE) {
+            
+            cols <- paste0("colnames(baseline) %in% c('",
+                           subset_procedure,
+                           "', '",
+                           outcome,
+                           "', '",
+                           predictor
+                           "')")
+            
+        } else {
+            
+            cols <- paste0("colnames(baseline) %in% c('",
+                           subset_procedure,
+                           "', '",
+                           outcome,
+                           "', '",
+                           predictor,
+                           "', '",
+                           paste0(covariate, collapse = "', '"),
+                           "')")
+            
+        }
+        
     }
     
     # subset
