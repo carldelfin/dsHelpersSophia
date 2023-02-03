@@ -43,8 +43,8 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
         
         # let user know which nodes were exluded, if any
         if (!is.null(error_nodes)) {
-            cat("NOTE! The following node(s) will be exluded due to connection errors:\n")
-            cat(error_nodes$node_name, "\n")
+            cat("\nNOTE! The following node(s) will be exluded due to connection errors:\n")
+            cat(error_nodes$node_name)
         }
     }
 
@@ -55,6 +55,7 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
     }
     
     builder <- DSI::newDSLoginBuilder()
+    
     for (i in 1:nrow(available_nodes)) {
         builder$append(server = available_nodes[i, "node_name"],
                        url = available_nodes[i, "url"],
