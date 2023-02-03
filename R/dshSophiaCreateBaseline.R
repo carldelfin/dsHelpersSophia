@@ -19,7 +19,7 @@
 #' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaCreateBaseline <- function(procedure_id = NULL) {
+dshSophiaCreateBaseline <- function(procedure_id = NULL, condition_id = NULL) {
 
     # ----------------------------------------------------------------------------------------------
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
@@ -79,6 +79,38 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL) {
             
             # merge with 'baseline'
             dsSwissKnifeClient::dssJoin(c("p", "baseline"),
+                                        symbol = "baseline",
+                                        by = "person_id",
+                                        join.type = "full",
+                                        datasources = opals)
+            
+        }
+    } 
+    
+    if (!is.null(condition_id)) {
+        
+        for (i in condition_id) {
+            
+            c_clause <- paste0("condition_concept_id in ('", i, "')")
+            
+            dsQueryLibrary::dsqLoad(symbol = "c",
+                                    domain = "concept_name",
+                                    query_name = "condition_occurrence",
+                                    where_clause = c_clause,
+                                    union = TRUE,
+                                    datasources = opals)
+            
+            dsSwissKnifeClient::dssDeriveColumn("c",
+                                                paste0("has_", i), 
+                                                "1")
+
+            dsSwissKnifeClient::dssSubset("c",
+                                          "c",
+                                          col.filter = paste0("c('person_id', 'has_", i, "')"),
+                                          datasources = opals)
+            
+            # merge with 'baseline'
+            dsSwissKnifeClient::dssJoin(c("c", "baseline"),
                                         symbol = "baseline",
                                         by = "person_id",
                                         join.type = "full",
