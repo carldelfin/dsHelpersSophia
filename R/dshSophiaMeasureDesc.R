@@ -17,6 +17,8 @@
 #' @importFrom utils menu 
 #' @export
 dshSophiaMeasureDesc <- function(variable, procedure_id = NA) {
+    
+    start <- Sys.time()
 
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
     # the user probably did not run dshSophiaConnect() yet. Here the user may do so, after 
@@ -137,6 +139,10 @@ dshSophiaMeasureDesc <- function(variable, procedure_id = NA) {
         out$procedure <- NA
         
     }
+    
+    end <- Sys.time()
+    runtime <- round(as.numeric(difftime(end, start, units = "secs")), 0) 
+    cat("\nDone with", variable, "after", runtime, "seconds\n")
     
     return(out)
 
