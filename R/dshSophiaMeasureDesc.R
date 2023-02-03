@@ -19,6 +19,7 @@
 dshSophiaMeasureDesc <- function(variable, procedure_id = NA) {
     
     start <- Sys.time()
+    cat("\nStarting with", variable, "\n")
 
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
     # the user probably did not run dshSophiaConnect() yet. Here the user may do so, after 
