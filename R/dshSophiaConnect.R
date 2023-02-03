@@ -28,7 +28,8 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
                              password = Sys.getenv("fdb_password"),
                              error = "exclude",
                              include = NULL,
-                             exclude = NULL) {
+                             exclude = NULL,
+                             append_name = NULL) {
 
     available_nodes <- tempfile() 
     download.file("https://sophia-fdb.vital-it.ch/nodes/status.csv", available_nodes)
@@ -90,7 +91,13 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
     for (i in 1:nrow(nodes_and_cohorts)) {
         tmp <- nodes_and_cohorts[i, ]
         server_short <- tmp$node_name
-        server_name <- paste0(tmp$node_name, "_", tmp$name)
+        
+        if (is.null(append_name)) {
+            server_name <- paste0(tmp$node_name, "_", tmp$name)
+        } else {
+            server_name <- paste0(tmp$node_name, "_", tmp$name, "_", append_name)
+        }
+        
         builder$append(server = server_name,
                        url = paste0("https://sophia-fdb.vital-it.ch/", server_short),
                        user = username,
