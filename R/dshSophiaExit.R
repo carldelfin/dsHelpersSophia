@@ -19,7 +19,7 @@
 #' @export
 dshSophiaExit <- function() {
     tryCatch(
-        expr = { DSI::datashield.logout(opals) },
+        expr = { DSI::datashield.logout(opals); rm(opals, nodes_and_cohorts) },
         error = function(e) { message("\nUnable to disconnect, are you sure you are connected?") }
     )
 }
