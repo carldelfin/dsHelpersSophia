@@ -36,7 +36,7 @@ dshSophiaLoad <- function() {
         tryCatch(
             expr = {
                 tmp <- nodes_and_cohorts[i, ]
-                this_opal <- datashield.connections_find()[[1]]@name
+                this_opal <- datashield.connections_find()[[i]]@name
                 this_project <- tmp$name
                 res <- opalr::opal.resources(opals[[this_opal]]@opal, this_project)
                 qualified_res_name <- paste0(this_project, ".", res$name)
