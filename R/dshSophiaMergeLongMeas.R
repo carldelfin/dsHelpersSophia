@@ -186,7 +186,7 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE) {
                                             join.type = "full",
                                             datasources = opals)
     
-                dsBaseClient::ds.rm("tdiff"))
+                dsBaseClient::ds.rm("tdiff")
 
             }
             
