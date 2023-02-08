@@ -69,12 +69,12 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, condition_id = NULL) {
                                     datasources = opals)
             
             dsSwissKnifeClient::dssDeriveColumn("p",
-                                                paste0("has_", i), 
+                                                paste0("tmp_", i), 
                                                 "1")
 
             dsSwissKnifeClient::dssSubset("p",
                                           "p",
-                                          col.filter = paste0("c('person_id', 'has_", i, "')"),
+                                          col.filter = paste0("c('person_id', 'tmp_", i, "')"),
                                           datasources = opals)
             
             # merge with 'baseline'
@@ -84,6 +84,23 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, condition_id = NULL) {
                                         join.type = "full",
                                         datasources = opals)
             
+            # replace NA with 0 and turn into factor
+            dsBaseClient::ds.replaceNA(paste0("baseline$tmp_", i), 
+                                       0, 
+                                       paste0("baseline$tmp2_", i))
+            
+            dsBaseClient::ds.asFactor(paste0("baseline$tmp2_", i), "tmp")
+            
+            dsSwissKnifeClient::dssDeriveColumn("baseline",
+                                                paste0("has_", i), 
+                                                "tmp")
+            
+            dsSwissKnifeClient::dssSubset("baseline",
+                                          "baseline",
+                                          col.filter = paste0("colnames(baseline) %in% c('person_id', 'gender', 'year_of_birth', 'birth_datetime', 'has_", i, "')"),
+                                          datasources = opals)
+            
+            dsBaseClient::ds.rm("tmp")
         }
     } 
     
@@ -116,6 +133,23 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, condition_id = NULL) {
                                         join.type = "full",
                                         datasources = opals)
             
+            # replace NA with 0 and turn into factor
+            dsBaseClient::ds.replaceNA(paste0("baseline$tmp_", i), 
+                                       0, 
+                                       paste0("baseline$tmp2_", i))
+            
+            dsBaseClient::ds.asFactor(paste0("baseline$tmp2_", i), "tmp")
+            
+            dsSwissKnifeClient::dssDeriveColumn("baseline",
+                                                paste0("has_", i), 
+                                                "tmp")
+            
+            dsSwissKnifeClient::dssSubset("baseline",
+                                          "baseline",
+                                          col.filter = paste0("colnames(baseline) %in% c('person_id', 'gender', 'year_of_birth', 'birth_datetime', 'has_", i, "')"),
+                                          datasources = opals)
+            
+            dsBaseClient::ds.rm("tmp")
         }
     }
 }
