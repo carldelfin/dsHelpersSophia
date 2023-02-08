@@ -22,7 +22,7 @@
 #' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dsSwissKnifeClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaMergeLongMeas <- function(concept_id) {
+dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE) {
 
     # ----------------------------------------------------------------------------------------------
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
@@ -109,42 +109,45 @@ dshSophiaMergeLongMeas <- function(concept_id) {
             # derive new names based on ith time point
             name3 <- paste0("t", i, "_", name2)
             
-            # time difference
-            aggr <- paste0("function(x) as.numeric(as.Date(x[", i, "]) - as.Date(x[1]))")
-            
-            dsSwissKnifeClient::dssPivot(symbol = "tdiff",
-                                         what = "m",
-                                         value.var = "measurement_date",
-                                         formula = "person_id ~ measurement_name",
-                                         by.col = "person_id",
-                                         fun.aggregate = eval(parse(text = aggr)),
-                                         datasources = opals)
-            
-            concept_name <- dsBaseClient::ds.summary("tdiff")[[1]][[4]][[2]]
-            
-            # remove missing
-            dsBaseClient::ds.completeCases(x1 = "tdiff",
-                                           newobj = "tdiff",
-                                           datasources = opals)
-            
-            # remove unrealistic values
-            # (8000 is approx. number of days from 2000-01-01 to today)
-            dsSwissKnifeClient::dssSubset("tdiff",
-                                          "tdiff",
-                                          row.filter = paste0("tdiff$", concept_name, " < 8000"),
-                                          datasources = opals)
-            
-            # create new time from t1 column
-            dsSwissKnifeClient::dssDeriveColumn("tdiff",
-                                                paste0(name3, "_days_since_t1"),
-                                                concept_name,
-                                                datasources = opals)
-            
-            # subset
-            dsSwissKnifeClient::dssSubset("tdiff",
-                                          "tdiff",
-                                          col.filter = paste0("c('person_id', '", name3, "_days_since_t1')"),
-                                          datasources = opals)
+            # time difference requested?
+            if (days == TRUE) {
+                
+                aggr <- paste0("function(x) as.numeric(as.Date(x[", i, "]) - as.Date(x[1]))")
+                
+                dsSwissKnifeClient::dssPivot(symbol = "tdiff",
+                                             what = "m",
+                                             value.var = "measurement_date",
+                                             formula = "person_id ~ measurement_name",
+                                             by.col = "person_id",
+                                             fun.aggregate = eval(parse(text = aggr)),
+                                             datasources = opals)
+                
+                concept_name <- dsBaseClient::ds.summary("tdiff")[[1]][[4]][[2]]
+                
+                # remove missing
+                dsBaseClient::ds.completeCases(x1 = "tdiff",
+                                               newobj = "tdiff",
+                                               datasources = opals)
+                
+                # remove unrealistic values
+                # (8000 is approx. number of days from 2000-01-01 to today)
+                dsSwissKnifeClient::dssSubset("tdiff",
+                                              "tdiff",
+                                              row.filter = paste0("tdiff$", concept_name, " < 8000"),
+                                              datasources = opals)
+                
+                # create new time from t1 column
+                dsSwissKnifeClient::dssDeriveColumn("tdiff",
+                                                    paste0(name3, "_days_since_t1"),
+                                                    concept_name,
+                                                    datasources = opals)
+                
+                # subset
+                dsSwissKnifeClient::dssSubset("tdiff",
+                                              "tdiff",
+                                              col.filter = paste0("c('person_id', '", name3, "_days_since_t1')"),
+                                              datasources = opals)
+            }
             
             # aggregation function for selecting the ith measurement
             aggr <- paste0("function(x) x[", i, "]")
@@ -174,28 +177,39 @@ dshSophiaMergeLongMeas <- function(concept_id) {
                                         join.type = "full",
                                         datasources = opals)
             
-            dsSwissKnifeClient::dssJoin(c("m_t1", "tdiff"),
-                                        symbol = "m_t1",
-                                        by = "person_id",
-                                        join.type = "full",
-                                        datasources = opals)
+            # merge tdiff with m_t1 if requested 
+            if (days == TRUE) {
+                
+                dsSwissKnifeClient::dssJoin(c("m_t1", "tdiff"),
+                                            symbol = "m_t1",
+                                            by = "person_id",
+                                            join.type = "full",
+                                            datasources = opals)
+    
+                dsBaseClient::ds.rm("tdiff"))
+
+            }
             
-            # calculate differences
-            dsSwissKnifeClient::dssDeriveColumn("m_t1",
-                                                paste0(name3, "_pct_change_from_t1"),
-                                                paste0("((", 
-                                                       name3,
-                                                       " - ", 
-                                                       gsub(paste0("t", i), "t1", name3),
-                                                       ") / ", 
-                                                       gsub(paste0("t", i), "t1", name3), 
-                                                       ") * 100"),
-                                                datasources = opals)
-            
-            dsSwissKnifeClient::dssDeriveColumn("m_t1",
-                                                paste0(name3, "_raw_change_from_t1"), 
-                                                paste0(name3, " - ", gsub(paste0("t", i), "t1", name3)),
-                                                datasources = opals)
+            # calculate change?
+            if (change == TRUE) {
+                
+                dsSwissKnifeClient::dssDeriveColumn("m_t1",
+                                                    paste0(name3, "_pct_change_from_t1"),
+                                                    paste0("((", 
+                                                           name3,
+                                                           " - ", 
+                                                           gsub(paste0("t", i), "t1", name3),
+                                                           ") / ", 
+                                                           gsub(paste0("t", i), "t1", name3), 
+                                                           ") * 100"),
+                                                    datasources = opals)
+                
+                dsSwissKnifeClient::dssDeriveColumn("m_t1",
+                                                    paste0(name3, "_raw_change_from_t1"), 
+                                                    paste0(name3, " - ", gsub(paste0("t", i), "t1", name3)),
+                                                    datasources = opals)
+                
+            }
 
         }
             
