@@ -22,7 +22,7 @@ dshSophiaShow <- function(username = Sys.getenv("fdb_user"),
                           error = "exclude") {
     
     available_nodes <- tempfile() 
-    download.file("https://sophia-fdb.vital-it.ch/nodes/status.csv", available_nodes)
+    download.file("https://sophia-fdb.vital-it.ch/nodes/status.csv", available_nodes, quiet = TRUE)
     available_nodes <- read.csv(available_nodes) 
     available_nodes$node_name <- trimws(available_nodes$X, whitespace = ".*\\/")
     colnames(available_nodes) <- c("url", "error_code", "node_name")

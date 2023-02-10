@@ -98,6 +98,14 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
                                   col.filter = cols,
                                   datasources = opals)
     
+    if (!(subset_procedure == FALSE)) {
+      
+      # subset to procedure == 1 
+      dsSwissKnifeClient::dssSubset("baseline_tmp",
+                                    "baseline_tmp",
+                                    row.filter = paste0("has_", procedure_id, " == 1"),
+    }
+    
     # remove NAs
     dsBaseClient::ds.completeCases(x1 = "baseline_tmp",
                                    newobj = "baseline_tmp",
