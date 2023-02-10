@@ -103,7 +103,7 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
       # subset to procedure == 1 
       dsSwissKnifeClient::dssSubset("baseline_tmp",
                                     "baseline_tmp",
-                                    row.filter = paste0("has_", procedure_id, " == 1"),
+                                    row.filter = paste0("has_", procedure_id, " == 1"))
     }
     
     # remove NAs
