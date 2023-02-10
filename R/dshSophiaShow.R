@@ -18,7 +18,8 @@
 #' @importFrom utils download.file read.csv
 #' @export
 dshSophiaShow <- function(username = Sys.getenv("fdb_user"),
-                          password = Sys.getenv("fdb_password")) {
+                          password = Sys.getenv("fdb_password"),
+                          error = "exclude") {
     
     available_nodes <- tempfile() 
     download.file("https://sophia-fdb.vital-it.ch/nodes/status.csv", available_nodes)
@@ -26,6 +27,17 @@ dshSophiaShow <- function(username = Sys.getenv("fdb_user"),
     available_nodes$node_name <- trimws(available_nodes$X, whitespace = ".*\\/")
     colnames(available_nodes) <- c("url", "error_code", "node_name")
     
+    if (error == "exclude") {
+        error_nodes <- subset(available_nodes, error_code == 1)
+        available_nodes <- subset(available_nodes, error_code == 0)
+        
+        # let user know which nodes were excluded, if any
+        if (!is.null(error_nodes)) {
+            cat("\nNOTE! The following node(s) will be exluded due to connection errors:\n")
+            cat(error_nodes$node_name, "\n")
+        }
+    }
+
     builder <- DSI::newDSLoginBuilder()
     for (i in 1:nrow(available_nodes)) {
         builder$append(server = available_nodes[i, "node_name"],
@@ -50,7 +62,7 @@ dshSophiaShow <- function(username = Sys.getenv("fdb_user"),
         function(x) { return(projects[[x]][!(projects[[x]]$name %in% c("sophia", "omop_test", "a_test")), , drop = FALSE])
     }, simplify = FALSE)
 
-    # create a dataframe in long format with all cohorts (projects)
+    # create a data frame in long format with all cohorts (projects)
     # corresponding to each node; note that this is assigned to the 
     # Global environment for use by `dshSophiaLoad()`
     nodes_and_cohorts <<- do.call("rbind", projects)[, c(1, 4:5)]
