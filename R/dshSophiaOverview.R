@@ -58,9 +58,11 @@ dshSophiaOverview <- function() {
                 # remove '_db' after each cohort name
                 dplyr::mutate(cohort = factor(gsub("(.*)_\\w+", "\\1", cohort))) |>
 
-                # fix strange formatting for 'table' column, then turn back into factor
-                dplyr::mutate(table = gsub(" ", "", as.character(table))) |>
-                dplyr::mutate(table = factor(table)) |>
+                # remove whitespace
+                dplyr::mutate(table = gsub(" ", "", as.character(table)),
+                              column_name = gsub(" ", "", as.character(column_name))) |>
+                dplyr::mutate(table = factor(table),
+                              column_name = factor(column_name)) |>
 
                 # make 'concept_id' a factor
                 dplyr::mutate(concept_id = factor(concept_id)) |>
