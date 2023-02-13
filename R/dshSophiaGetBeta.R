@@ -39,6 +39,8 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
                dshSophiaPrompt(),
                stop("Aborting..."))
     }
+  
+    cat("\n\nModelling variable:", predictor, "\n\n")
     
     # create subset formula
     if (subset_procedure == FALSE) {
