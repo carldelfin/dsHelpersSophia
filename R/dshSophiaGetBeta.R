@@ -105,7 +105,7 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
       # subset to procedure == 1 
       dsSwissKnifeClient::dssSubset("baseline_tmp",
                                     "baseline_tmp",
-                                    row.filter = paste0("has_", procedure_id, " == 1"))
+                                    row.filter = paste0("has_", subset_procedure, " == 1"))
     }
     
     # remove NAs
@@ -119,7 +119,7 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
     # numeric/integer outcome
     if (tmp[[1]][[1]] == "numeric" | tmp[[1]][[1]] == "integer") {
       
-        # if outcome is NA, Inf, or have mean == 0, or length (valid N) < 10, return empty
+        # if outcome is NA, Inf, or have mean == 0, or length (valid N) < 20, return empty
         if (is.na(tmp[[1]][[3]][[8]]) | tmp[[1]][[3]][[8]] == 0 | tmp[[1]][[3]][[8]] == Inf | tmp[[1]][[2]] < 20) {
             
             # get beta etc
