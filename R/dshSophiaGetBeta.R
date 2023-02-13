@@ -133,9 +133,9 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
       if (tmp[[1]][[1]] == "numeric" | tmp[[1]][[1]] == "integer") {
         
         # if outcome is NA, Inf, have mean == 0, or
-        # length (valid N) < 20
+        # length (valid N) < 10
         # return empty
-        if (is.na(tmp[[1]][[3]][[8]]) | tmp[[1]][[3]][[8]] == 0 | tmp[[1]][[3]][[8]] == Inf | tmp[[1]][[2]] < 20) {
+        if (is.na(tmp[[1]][[3]][[8]]) | tmp[[1]][[3]][[8]] == 0 | tmp[[1]][[3]][[8]] == Inf | tmp[[1]][[2]] < 10) {
           
           # get beta etc
           out <- data.frame(outcome = outcome,
