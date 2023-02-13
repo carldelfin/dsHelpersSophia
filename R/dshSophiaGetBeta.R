@@ -119,8 +119,11 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
     # numeric/integer outcome
     if (tmp[[1]][[1]] == "numeric" | tmp[[1]][[1]] == "integer") {
       
-        # if outcome is NA, Inf, or have mean == 0, or length (valid N) < 20, return empty
-        if (is.na(tmp[[1]][[3]][[8]]) | tmp[[1]][[3]][[8]] == 0 | tmp[[1]][[3]][[8]] == Inf | tmp[[1]][[2]] < 20) {
+        # if outcome is NA, Inf, have mean == 0, or
+        # length (valid N) < 20, or
+        # tmp is an invalid object (too many NAs),
+        # return empty
+        if (is.na(tmp[[1]][[3]][[8]]) | tmp[[1]][[3]][[8]] == 0 | tmp[[1]][[3]][[8]] == Inf | tmp[[1]][[2]] < 20 | tmp[[1]] == "INVALID object!") {
             
             # get beta etc
             out <- data.frame(outcome = outcome,
