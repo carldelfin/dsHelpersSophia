@@ -64,8 +64,8 @@ dshSophiaOverview <- function() {
                 dplyr::mutate(table = factor(table),
                               column_name = factor(column_name)) |>
 
-                # make 'concept_id' a factor
-                dplyr::mutate(concept_id = factor(concept_id)) |>
+                # make 'concept_id' a numeric
+                dplyr::mutate(concept_id = as.numeric(concept_id)) |>
                 dplyr::select(cohort, dplyr::everything())
 
             return(overview)
