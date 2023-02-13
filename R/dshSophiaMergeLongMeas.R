@@ -40,7 +40,7 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE) {
                stop("Aborting..."))
     }
     
-    cat("\nMerging Concept ID:", concept_id, "\n")
+    cat("\n\nMerging Concept ID:", concept_id, "\n\n")
     
     # make sure the user has specified a concept ID that can be loaded from the measurement table
     tryCatch(
