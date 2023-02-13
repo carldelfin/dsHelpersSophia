@@ -71,7 +71,7 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
         if (covariate == FALSE) {
             
             cols <- paste0("colnames(baseline) %in% c('",
-                           subset_procedure,
+                           paste0("has_", subset_procedure),
                            "', '",
                            outcome,
                            "', '",
@@ -81,7 +81,7 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
         } else {
             
             cols <- paste0("colnames(baseline) %in% c('",
-                           subset_procedure,
+                           paste0("has_", subset_procedure),
                            "', '",
                            outcome,
                            "', '",
