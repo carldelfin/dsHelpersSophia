@@ -116,9 +116,9 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
     # get a temporary summary
     tmp <- dsBaseClient::ds.summary(paste0("baseline_tmp$", predictor))
     
-    if (tmp[[1]] == "INVALID object!") {
+    
+    if (length(tmp[[1]]) == 1) {
       
-      # get beta etc
       out <- data.frame(outcome = outcome,
                         predictor = predictor,
                         valid_n = NA,
