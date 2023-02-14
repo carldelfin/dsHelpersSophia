@@ -228,7 +228,7 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = NULL, subset_proced
     if (is.null(covariate)) {
         out$covariate <- "none"
     } else {
-        out$covariate <- paste0(covariates, collapse = ".")
+        out$covariate <- paste0(covariate, collapse = ".")
     }
     
     if (is.null(subset_procedure)) {
