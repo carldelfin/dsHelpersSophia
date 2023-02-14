@@ -35,7 +35,6 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = NULL, subset_proced
         cat("No 'opals' and/or 'nodes_and_cohorts' object found\n")
         cat("You probably did not run 'dshSophiaConnect' yet, do you wish to do that now?\n")
         switch(menu(c("Yes", "No (abort)")) + 1,
-               cat("Test"), 
                dshSophiaPrompt(),
                stop("Aborting..."))
     }
