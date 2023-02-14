@@ -22,7 +22,7 @@
 #' @import DSOpal opalr httr DSI dsBaseClient dsSwissKnifeClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_procedure = FALSE, standardized = TRUE) {
+dshSophiaGetBeta <- function(outcome, predictor, covariate = NULL, subset_procedure = NULL, standardized = TRUE) {
     
     # ----------------------------------------------------------------------------------------------
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
@@ -43,10 +43,14 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
     cat("\n\nModelling variable:", predictor, "\n\n")
     
     # create subset formula
-    if (subset_procedure == FALSE) {
-        
-        if (!(covariate == FALSE)) {
-            
+    if (is.null(subset_procedure)) {
+        if (is.null(covariate)) {
+            cols <- paste0("colnames(baseline) %in% c('",
+                           outcome,
+                           "', '",
+                           predictor,
+                           "')")
+        } else {
             cols <- paste0("colnames(baseline) %in% c('",
                            outcome,
                            "', '",
@@ -54,19 +58,9 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
                            "', '",
                            paste0(covariate, collapse = "', '"),
                            "')")
-        } else {
-            cols <- paste0("colnames(baseline) %in% c('",
-                           outcome,
-                           "', '",
-                           predictor,
-                           "')")
         }
-        
-        
     } else {
-        
-        if (covariate == FALSE) {
-            
+        if (is.null(covariate)) {
             cols <- paste0("colnames(baseline) %in% c('",
                            paste0("has_", subset_procedure),
                            "', '",
@@ -74,9 +68,7 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
                            "', '",
                            predictor,
                            "')")
-            
         } else {
-            
             cols <- paste0("colnames(baseline) %in% c('",
                            paste0("has_", subset_procedure),
                            "', '",
@@ -86,35 +78,29 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
                            "', '",
                            paste0(covariate, collapse = "', '"),
                            "')")
-            
         }
-        
     }
-    
     # subset
     dsSwissKnifeClient::dssSubset("baseline_tmp", 
                                   "baseline",
                                   col.filter = cols,
                                   datasources = opals)
     
-    if (!(subset_procedure == FALSE)) {
-      
-      # subset to procedure == 1 
-      dsSwissKnifeClient::dssSubset("baseline_tmp",
-                                    "baseline_tmp",
-                                    row.filter = paste0("has_", subset_procedure, " == 1"))
+    if (!(is.null(subset_procedure))) {
+        # subset to procedure == 1 
+        dsSwissKnifeClient::dssSubset("baseline_tmp",
+                                      "baseline_tmp",
+                                      row.filter = paste0("has_", subset_procedure, " == 1"))
     }
-    
+
     # remove NAs
     dsBaseClient::ds.completeCases(x1 = "baseline_tmp",
                                    newobj = "baseline_tmp",
                                    datasources = opals)
-    
     # get a temporary summary
     tmp <- dsBaseClient::ds.summary(paste0("baseline_tmp$", predictor))
     
     if (length(tmp[[1]]) == 1) {
-      
       out <- data.frame(outcome = outcome,
                         predictor = predictor,
                         valid_n = NA,
@@ -122,9 +108,7 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
                         p.value = NA,
                         ci.low = NA,
                         ci.high = NA)
-      
     } else {
-      
       # numeric/integer outcome
       if (tmp[[1]][[1]] == "numeric" | tmp[[1]][[1]] == "integer") {
         
@@ -133,7 +117,7 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
         # return empty
         if (is.na(tmp[[1]][[3]][[8]]) | tmp[[1]][[3]][[8]] == 0 | tmp[[1]][[3]][[8]] == Inf | tmp[[1]][[2]] < 20) {
           
-          # get beta etc
+          # return empty 
           out <- data.frame(outcome = outcome,
                             predictor = predictor,
                             valid_n = NA,
@@ -152,39 +136,44 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
             
           }
           
-          if (covariate == FALSE) {
-            
+          if (is.null(covariate)) {
             formula <- as.formula(paste0(outcome, " ~ 1 +", predictor))
-            
           } else {
-            
             formula <- as.formula(paste0(outcome, " ~ 1 +", paste0(covariate, collapse = "+"), "+", predictor))
-            
           }
-          
-          mod <- dsBaseClient::ds.glm(formula = formula,
-                                      data = "baseline_tmp",
-                                      family = "gaussian",
-                                      maxit = 20,
-                                      CI = 0.95,
-                                      viewIter = FALSE,
-                                      viewVarCov = FALSE,
-                                      viewCor = FALSE,
-                                      datasources = opals)
-          
-          # get relevant results and put into data frame
-          coefs <- as.data.frame(mod$coefficients)
-          coefs$predictor <- rownames(coefs)
-          coefs <- coefs[coefs$predictor == predictor, ]
-          
-          out <- data.frame(outcome = outcome,
-                            predictor = predictor,
-                            valid_n = mod$Nvalid,
-                            beta = coefs[[1]],
-                            p.value = coefs[[4]],
-                            ci.low = coefs[[5]],
-                            ci.high = coefs[[6]])
-          
+
+          tryCatch(
+                   expr = {
+                       mod <- dsBaseClient::ds.glm(formula = formula,
+                                                   data = "baseline_tmp",
+                                                   family = "gaussian",
+                                                   maxit = 20,
+                                                   CI = 0.95,
+                                                   viewIter = FALSE,
+                                                   viewVarCov = FALSE,
+                                                   viewCor = FALSE,
+                                                   datasources = opals)
+
+                       # get relevant results and put into data frame
+                       coefs <- as.data.frame(mod$coefficients)
+                       coefs$predictor <- rownames(coefs)
+                       coefs <- coefs[coefs$predictor == predictor, ]
+
+                       out <- data.frame(outcome = outcome,
+                                         predictor = predictor,
+                                         valid_n = mod$Nvalid,
+                                         beta = coefs[[1]],
+                                         p.value = coefs[[4]],
+                                         ci.low = coefs[[5]],
+                                         ci.high = coefs[[6]])
+
+                       message("GLM model was successfull!")
+                   },
+                   error = function(e) {
+                       message("Caught an error!")
+                       print(e)
+                       print(datashield.errors())
+                   })
         }
         
       # factor outcome
@@ -198,14 +187,10 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
           
         }
         
-        if (covariate == FALSE) {
-          
+        if (is.null(covariate)) {
           formula <- as.formula(paste0(outcome, " ~ 1 +", predictor))
-          
         } else {
-          
           formula <- as.formula(paste0(outcome, " ~ 1 +", paste0(covariate, collapse = "+"), "+", predictor))
-          
         }
         
         mod <- dsBaseClient::ds.glm(formula = formula,
@@ -240,6 +225,20 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
       
     }
     
+    if (is.null(covariate)) {
+        out$covariate <- "none"
+    } else {
+        out$covariate <- paste0(covariates, collapse = ".")
+    }
+    
+    if (is.null(subset_procedure)) {
+        out$subset_procedure <- "none"
+    } else {
+        out$subset_procedure <- subset_procedure 
+    }
+
+    out$cohort <- strsplit(opals[[1]]@name, "_")[[1]][[1]]
+
     return(out)
     
 }
