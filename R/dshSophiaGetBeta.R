@@ -166,7 +166,7 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = NULL, subset_proced
                                          ci.low = coefs[[5]],
                                          ci.high = coefs[[6]])
 
-                       message("GLM model was successfull!")
+                       message("GLM was successfull!")
                    },
                    error = function(e) {
                        message("Caught an error!")
