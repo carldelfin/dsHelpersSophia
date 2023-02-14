@@ -45,15 +45,7 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
     # create subset formula
     if (subset_procedure == FALSE) {
         
-        if (covariate == FALSE) {
-            
-            cols <- paste0("colnames(baseline) %in% c('",
-                           outcome,
-                           "', '",
-                           predictor,
-                           "')")
-            
-        } else {
+        if (!(covariate == FALSE)) {
             
             cols <- paste0("colnames(baseline) %in% c('",
                            outcome,
@@ -62,7 +54,12 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = FALSE, subset_proce
                            "', '",
                            paste0(covariate, collapse = "', '"),
                            "')")
-            
+        } else {
+            cols <- paste0("colnames(baseline) %in% c('",
+                           outcome,
+                           "', '",
+                           predictor,
+                           "')")
         }
         
         
