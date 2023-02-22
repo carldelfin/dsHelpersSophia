@@ -16,7 +16,7 @@
 #' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dsSwissKnifeClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaMeasureDesc <- function(variable, subset_procedure = NA, subset_observation = NA) {
+dshSophiaMeasureDesc <- function(variable, keep_procedure = NA, keep_observation = NA, remove_procedure = NA, remove_observation = NA) {
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
     # the user probably did not run dshSophiaConnect() yet. Here the user may do so, after 
     # being prompted for username and password.
@@ -30,16 +30,31 @@ dshSophiaMeasureDesc <- function(variable, subset_procedure = NA, subset_observa
                stop("Aborting..."))
     }
 
-    # subset procedure?
-    if (!is.na(subset_procedure)) {
-        p_fil <- paste0(", 'has_", subset_procedure, "'")
+    # remove procedure?
+    if (!is.na(remove_procedure)) {
+        p_fil <- paste0(", 'has_", remove_procedure, "'")
+    } else {
+        p_fil <- NULL
+    }
+    
+    # keep procedure?
+    if (!is.na(keep_procedure)) {
+        p_fil <- paste0(", 'has_", keep_procedure, "'")
     } else {
         p_fil <- NULL
     }
 
-    # subset observation?
-    if (!is.na(subset_observation)) {
-        o_fil <- paste0(", 'has_", subset_observation, "'")
+
+    # remove observation?
+    if (!is.na(remove_observation)) {
+        o_fil <- paste0(", 'has_", remove_observation, "'")
+    } else {
+        o_fil <- NULL
+    }
+    
+    # keep observation?
+    if (!is.na(keep_observation)) {
+        o_fil <- paste0(", 'has_", keep_observation, "'")
     } else {
         o_fil <- NULL
     }
@@ -51,19 +66,35 @@ dshSophiaMeasureDesc <- function(variable, subset_procedure = NA, subset_observa
                                   col.filter = fil,
                                   datasources = opals)
  
-    # subset procedure?
-    if (!is.na(subset_procedure)) {
+    # remove procedure?
+    if (!is.na(remove_procedure)) {
         dsSwissKnifeClient::dssSubset("baseline_tmp",
                                       "baseline_tmp",
-                                      row.filter = paste0("has_", subset_procedure, " == 1"),
+                                      row.filter = paste0("has_", remove_procedure, " == 0"),
+                                      datasources = opals)
+    } 
+    
+    # keep procedure?
+    if (!is.na(keep_procedure)) {
+        dsSwissKnifeClient::dssSubset("baseline_tmp",
+                                      "baseline_tmp",
+                                      row.filter = paste0("has_", keep_procedure, " == 1"),
                                       datasources = opals)
     } 
 
-    # subset observation?
-    if (!is.na(subset_observation)) {
+    # remove observation?
+    if (!is.na(remove_observation)) {
         dsSwissKnifeClient::dssSubset("baseline_tmp",
                                       "baseline_tmp",
-                                      row.filter = paste0("has_", subset_observation, " == 1"),
+                                      row.filter = paste0("has_", remove_observation, " == 0"),
+                                      datasources = opals)
+    }
+    
+    # remove observation?
+    if (!is.na(keep_observation)) {
+        dsSwissKnifeClient::dssSubset("baseline_tmp",
+                                      "baseline_tmp",
+                                      row.filter = paste0("has_", keep_observation, " == 1"),
                                       datasources = opals)
     }
 
@@ -129,19 +160,33 @@ dshSophiaMeasureDesc <- function(variable, subset_procedure = NA, subset_observa
                           max = tmp_range[[1]][[1]][[2]])
     }
      
-    # add observation
-    if (!is.null(subset_observation)) {
-        out$observation <- subset_observation 
+    # remove observation
+    if (!is.null(remove_observation)) {
+        out$remove_observation <- remove_observation 
     } else {
-        out$observation <- NA
+        out$remove_observation <- NA
     }
     
-    # add procedure
-    if (!is.null(subset_procedure)) {
-        out$procedure <- subset_procedure 
+    # keep observation
+    if (!is.null(keep_observation)) {
+        out$keep_observation <- keep_observation 
     } else {
-        out$procedure <- NA
+        out$keep_observation <- NA
     }
     
+    # remove procedure
+    if (!is.null(remove_procedure)) {
+        out$remove_procedure <- remove_procedure 
+    } else {
+        out$remove_procedure <- NA
+    }
+    
+    # keep procedure
+    if (!is.null(keep_procedure)) {
+        out$keep_procedure <- keep_procedure 
+    } else {
+        out$keep_procedure <- NA
+    }
+
     return(out)
 }
