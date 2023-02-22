@@ -16,10 +16,10 @@
 #' # check result
 #' dsBaseClient::ds.summary("baseline")
 #' }
-#' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dplyr
+#' @import DSOpal opalr httr DSI dsQueryLibrary dsResource dsBaseClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaCreateBaseline <- function(procedure_id = NULL, condition_id = NULL) {
+dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL) {
 
     # ----------------------------------------------------------------------------------------------
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
@@ -111,30 +111,42 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, condition_id = NULL) {
         }
     } 
     
-    if (!is.null(condition_id)) {
+    if (!is.null(observation_id)) {
         
-        for (i in condition_id) {
+        for (i in observation_id) {
             
-            c_clause <- paste0("condition_concept_id in ('", i, "')")
-            
-            dsQueryLibrary::dsqLoad(symbol = "c",
-                                    domain = "concept_name",
-                                    query_name = "condition_occurrence",
-                                    where_clause = c_clause,
-                                    union = TRUE,
-                                    datasources = opals)
-            
-            dsSwissKnifeClient::dssDeriveColumn("c",
-                                                paste0("has_", i), 
+            o_clause <- paste0("observation_concept_id in ('", i, "')")
+
+            connection_name <- gsub("\\.", "_", DSI::datashield.resources(opals)[[1]])
+
+            dsResource::dsrAssign(symbol = "o",
+                                  table = "observation",
+                                  where_clause = o_clause,
+                                  db_connection = connection_name,
+                                  datasources = opals)
+
+            dsSwissKnifeClient::dssSubset("o",
+                                          "o",
+                                          row.filter = "unique(person_id)",
+                                          datasources = opals)
+ 
+            dsSwissKnifeClient::dssSubset("o",
+                                          "o",
+                                          col.filter = paste0("c('person_id')"),
+                                          datasources = opals)
+
+            dsSwissKnifeClient::dssDeriveColumn("o",
+                                                paste0("tmp_", i), 
                                                 "1")
 
-            dsSwissKnifeClient::dssSubset("c",
-                                          "c",
-                                          col.filter = paste0("c('person_id', 'has_", i, "')"),
+            dsSwissKnifeClient::dssSubset("o",
+                                          "o",
+                                          col.filter = paste0("c('person_id', 'tmp_", i, "')"),
                                           datasources = opals)
-             
+
+            
             # join into temporary data frame 'tmp'
-            dsSwissKnifeClient::dssJoin(c("c", "baseline"),
+            dsSwissKnifeClient::dssJoin(c("o", "baseline"),
                                         symbol = "tmp",
                                         by = "person_id",
                                         join.type = "full",
@@ -162,6 +174,9 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, condition_id = NULL) {
                                         by = "person_id",
                                         join.type = "full",
                                         datasources = opals)
+            
+            # remove duplicate IDs 
+            dsBaseClient::ds.completeCases("baseline", "baseline", opals)
             
             dsBaseClient::ds.rm("tmp")
         }
