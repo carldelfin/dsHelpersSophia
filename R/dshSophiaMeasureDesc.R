@@ -32,34 +32,34 @@ dshSophiaMeasureDesc <- function(variable, keep_procedure = NA, keep_observation
 
     # remove procedure?
     if (!is.na(remove_procedure)) {
-        p_fil <- paste0(", 'has_", remove_procedure, "'")
+        rp_fil <- paste0(", 'has_", remove_procedure, "'")
     } else {
-        p_fil <- NULL
+        rp_fil <- NULL
     }
     
     # keep procedure?
     if (!is.na(keep_procedure)) {
-        p_fil <- paste0(", 'has_", keep_procedure, "'")
+        kp_fil <- paste0(", 'has_", keep_procedure, "'")
     } else {
-        p_fil <- NULL
+        kp_fil <- NULL
     }
 
 
     # remove observation?
     if (!is.na(remove_observation)) {
-        o_fil <- paste0(", 'has_", remove_observation, "'")
+        ro_fil <- paste0(", 'has_", remove_observation, "'")
     } else {
-        o_fil <- NULL
+        ro_fil <- NULL
     }
     
     # keep observation?
     if (!is.na(keep_observation)) {
-        o_fil <- paste0(", 'has_", keep_observation, "'")
+        ko_fil <- paste0(", 'has_", keep_observation, "'")
     } else {
-        o_fil <- NULL
+        ko_fil <- NULL
     }
 
-    fil <- paste0("c('", variable, "'", p_fil, o_fil, ")")
+    fil <- paste0("c('", variable, "'", rp_fil, ro_fil, kp_fil, ko_fil, ")")
 
     dsSwissKnifeClient::dssSubset("baseline_tmp",
                                   "baseline",
