@@ -16,7 +16,7 @@
 #' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dsSwissKnifeClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaMeasureDesc <- function(variable, procedure_id = NA) {
+dshSophiaMeasureDesc <- function(variable, subset_procedure = NA, subset_observation = NA) {
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
     # the user probably did not run dshSophiaConnect() yet. Here the user may do so, after 
     # being prompted for username and password.
@@ -29,46 +29,52 @@ dshSophiaMeasureDesc <- function(variable, procedure_id = NA) {
                dshSophiaPrompt(),
                stop("Aborting..."))
     }
-    
-    # grouped by procedure?
-    if (!is.na(procedure_id)) {
-        
-        # subset to procedure and variable
-        dsSwissKnifeClient::dssSubset("baseline_tmp",
-                                      "baseline",
-                                      col.filter = paste0("c('", variable, "', 'has_", procedure_id, "')"),
-                                      datasources = opals)
-       
-        # subset to procedure == 1 
+
+    # subset procedure?
+    if (!is.na(subset_procedure)) {
+        p_fil <- paste0(", 'has_", subset_procedure, "'")
+    } else {
+        p_fil <- NULL
+    }
+
+    # subset observation?
+    if (!is.na(subset_observation)) {
+        o_fil <- paste0(", 'has_", subset_observation, "'")
+    } else {
+        o_fil <- NULL
+    }
+
+    fil <- paste0("c('", variable, "'", p_fil, o_fil, ")")
+
+    dsSwissKnifeClient::dssSubset("baseline_tmp",
+                                  "baseline",
+                                  col.filter = fil,
+ 
+    # subset procedure?
+    if (!is.na(subset_procedure)) {
         dsSwissKnifeClient::dssSubset("baseline_tmp",
                                       "baseline_tmp",
-                                      row.filter = paste0("has_", procedure_id, " == 1"),
+                                      row.filter = paste0("has_", subset_procedure, " == 1"),
                                       datasources = opals)
-        
-        # remove NAs 
-        dsBaseClient::ds.completeCases(x1 = "baseline_tmp",
-                                       newobj = "baseline_tmp",
-                                       datasources = opals)
-        
-    } else {
-        
-        # subset to variable and person_id
+    } 
+
+    # subset observation?
+    if (!is.na(subset_observation)) {
         dsSwissKnifeClient::dssSubset("baseline_tmp",
-                                      "baseline",
-                                      col.filter = paste0("c('person_id', '", variable, "')"),
+                                      "baseline_tmp",
+                                      row.filter = paste0("has_", subset_observation, " == 1"),
                                       datasources = opals)
-        
-        # remove NAs
-        dsBaseClient::ds.completeCases(x1 = "baseline_tmp",
-                                       newobj = "baseline_tmp",
-                                       datasources = opals)
     }
+
+    # remove NAs 
+    dsBaseClient::ds.completeCases(x1 = "baseline_tmp",
+                                   newobj = "baseline_tmp",
+                                   datasources = opals)
     
     concept_id <- stringr::str_split(variable, "_", n = 3)[[1]][[2]]
     tmp_summary <- dsBaseClient::ds.summary(paste0("baseline_tmp$", variable))
     
     if (length(tmp_summary[[1]]) == 1) {
-        
         out <- data.frame(concept_id = concept_id,
                           time = NA,
                           type = NA,
@@ -82,9 +88,7 @@ dshSophiaMeasureDesc <- function(variable, procedure_id = NA) {
                           iqr = NA,
                           min = NA,
                           max = NA)
-        
     } else if (tmp_summary[[1]][[2]] < 5) {
-        
         out <- data.frame(concept_id = concept_id,
                           time = NA,
                           type = NA,
@@ -98,24 +102,17 @@ dshSophiaMeasureDesc <- function(variable, procedure_id = NA) {
                           iqr = NA,
                           min = NA,
                           max = NA)
-        
     } else {
-        
         tmp_summary <- tmp_summary[[1]]
         tmp_var <- dsBaseClient::ds.var(paste0("baseline_tmp$", variable))
         tmp_range <- dsSwissKnifeClient::dssRange(paste0("baseline_tmp$", variable))
         time <- stringr::str_split(variable, "_", n = 3)[[1]][[1]]
         
         if (length(stringr::str_split(variable, "_", n = 3)[[1]]) == 2) {
-            
             type <- "raw_score"
-            
         } else {
-            
             type <- stringr::str_split(variable, "_", n = 3)[[1]][[3]]
-            
         }
-        
         out <- data.frame(concept_id = concept_id,
                           time = time,
                           type = type,
@@ -129,20 +126,21 @@ dshSophiaMeasureDesc <- function(variable, procedure_id = NA) {
                           iqr = tmp_summary[[3]][[5]] - tmp_summary[[3]][[3]],
                           min = tmp_range[[1]][[1]][[1]],
                           max = tmp_range[[1]][[1]][[2]])
-        
+    }
+     
+    # add observation
+    if (!is.null(subset_observation)) {
+        out$observation <- subset_observation 
+    } else {
+        out$observation <- NA
     }
     
     # add procedure
-    if (!is.null(procedure_id)) {
-        
-        out$procedure <- procedure_id
-        
+    if (!is.null(subset_procedure)) {
+        out$procedure <- subset_procedure 
     } else {
-        
         out$procedure <- NA
-        
     }
     
     return(out)
-
 }
