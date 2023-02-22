@@ -29,7 +29,8 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
                              error = "exclude",
                              include = NULL,
                              exclude = NULL,
-                             append_name = NULL) {
+                             append_name = NULL,
+                             restore = NULL) {
 
     available_nodes <- tempfile() 
     download.file("https://sophia-fdb.vital-it.ch/nodes/status.csv", available_nodes, quiet = TRUE)
@@ -108,10 +109,18 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
         rm(tmp, server_short, server_name)
     }
 
-    tryCatch(
-        expr = { opals <<- DSI::datashield.login(logins = builder$build()) },
-        error = function(e) { message("\nUnable to log in, please check your credentials!") }
-    )
+    if (is.null(restore)) {
+        tryCatch(
+                 expr = { opals <<- DSI::datashield.login(logins = builder$build()) },
+                 error = function(e) { message("\nUnable to log in, please check your credentials!") }
+        )
+    } else {
+        tryCatch(
+                 expr = { opals <<- DSI::datashield.login(logins = builder$build(),
+                                                          restore = restore) },
+                 error = function(e) { message("\nUnable to log in, please check your credentials!") }
+        )
+    }
 
     # finally, let the user know which cohorts are accessible
     cat("\n")
