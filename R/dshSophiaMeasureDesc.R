@@ -49,6 +49,7 @@ dshSophiaMeasureDesc <- function(variable, subset_procedure = NA, subset_observa
     dsSwissKnifeClient::dssSubset("baseline_tmp",
                                   "baseline",
                                   col.filter = fil,
+                                  datasources = opals)
  
     # subset procedure?
     if (!is.na(subset_procedure)) {
