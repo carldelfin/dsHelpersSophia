@@ -127,7 +127,7 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL) 
 
             dsSwissKnifeClient::dssSubset("o",
                                           "o",
-                                          row.filter = "unique(person_id)",
+                                          row.filter = "!duplicated(person_id)",
                                           datasources = opals)
  
             dsSwissKnifeClient::dssSubset("o",
@@ -175,12 +175,6 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL) 
                                         join.type = "full",
                                         datasources = opals)
             
-            # remove duplicate IDs 
-            dsSwissKnifeClient::dssSubset("baseline",
-                                          "baseline",
-                                          row.filter = "unique(person_id)",
-                                          datasources = opals)
-          
             # clean up
             dsBaseClient::ds.rm("tmp")
         }
