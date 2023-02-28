@@ -16,7 +16,7 @@
 #' # add a longitudinal measure
 #' dshSophiaMergeLongMeas(concept_id = 3038553)
 #' 
-#' # check result
+#' # check resul:qt
 #' dsBaseClient::ds.summary("baseline")
 #' }
 #' @import DSOpal opalr httr DSI dsBaseClient dsSwissKnifeClient dplyr
@@ -103,7 +103,9 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = NULL, subset_proced
       out <- data.frame(outcome = outcome,
                         predictor = predictor,
                         valid_n = NA,
+                        intercent = NA
                         beta = NA,
+                        se = NA,
                         p.value = NA,
                         ci.low = NA,
                         ci.high = NA)
@@ -120,7 +122,9 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = NULL, subset_proced
           out <- data.frame(outcome = outcome,
                             predictor = predictor,
                             valid_n = NA,
+                            intercept = NA,
                             beta = NA,
+                            se = NA,
                             p.value = NA,
                             ci.low = NA,
                             ci.high = NA)
@@ -161,7 +165,9 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = NULL, subset_proced
                        out <- data.frame(outcome = outcome,
                                          predictor = predictor,
                                          valid_n = mod$Nvalid,
+                                         intercept = ,
                                          beta = coefs[[1]],
+                                         se = ,
                                          p.value = coefs[[4]],
                                          ci.low = coefs[[5]],
                                          ci.high = coefs[[6]])
@@ -215,7 +221,9 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = NULL, subset_proced
         out <- data.frame(outcome = outcome,
                           predictor = predictor,
                           valid_n = mod$Nvalid,
+                          intercept = ,
                           beta = coefs[[1]],
+                          se = ,
                           p.value = coefs[[4]],
                           ci.low = coefs[[5]],
                           ci.high = coefs[[6]])
