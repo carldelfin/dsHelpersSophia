@@ -77,34 +77,33 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE) {
     curr_concept_id <- dsBaseClient::ds.summary("mw")[[1]][[4]][2]
     num_timepoints <- dsBaseClient::ds.summary(paste0("mw$", curr_concept_id))[[1]][[3]][[7]]
     
-    # are there multiple time points?
+    # first time point
+    # pivot and take first measurement
+    dsSwissKnifeClient::dssPivot("m_t1",
+                                 what = "m",
+                                 value.var = "value_as_number",
+                                 formula = "person_id ~ measurement_concept_id",
+                                 by.col = "person_id",
+                                 fun.aggregate = "function(x) x[1]",
+                                 datasources = opals)
+
+    # fix column name and subset
+    name1 <- curr_concept_id
+    name2 <- gsub("measurement_concept_id.", "", name1)
+    name3 <- paste0("t1_", name2)
+
+    dsSwissKnifeClient::dssDeriveColumn("m_t1",
+                                        name3,
+                                        name1,
+                                        datasources = opals)
+
+    dsSwissKnifeClient::dssSubset("m_t1",
+                                  "m_t1",
+                                  col.filter = paste0("c('person_id', '", name3, "')"),
+                                  datasources = opals)
+
     if (num_timepoints > 1) {
 
-        # first time point
-        # pivot and take first measurement
-        dsSwissKnifeClient::dssPivot("m_t1",
-                                     what = "m",
-                                     value.var = "value_as_number",
-                                     formula = "person_id ~ measurement_concept_id",
-                                     by.col = "person_id",
-                                     fun.aggregate = "function(x) x[1]",
-                                     datasources = opals)
-        
-        # fix column name and subset
-        name1 <- curr_concept_id
-        name2 <- gsub("measurement_concept_id.", "", name1)
-        name3 <- paste0("t1_", name2)
-        
-        dsSwissKnifeClient::dssDeriveColumn("m_t1",
-                                            name3,
-                                            name1,
-                                            datasources = opals)
-        
-        dsSwissKnifeClient::dssSubset("m_t1",
-                                      "m_t1",
-                                      col.filter = paste0("c('person_id', '", name3, "')"),
-                                      datasources = opals)
-    
         # loop through time points
         for (i in 2:num_timepoints) {
             
@@ -215,14 +214,15 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE) {
 
         }
             
-        # merge with 'baseline'
-        dsSwissKnifeClient::dssJoin(c("m_t1", "baseline"),
-                                    symbol = "baseline",
-                                    by = "person_id",
-                                    join.type = "full",
-                                    datasources = opals)
-        
     }
+        
+    # merge with 'baseline'
+    dsSwissKnifeClient::dssJoin(c("m_t1", "baseline"),
+                                symbol = "baseline",
+                                by = "person_id",
+                                join.type = "full",
+                                datasources = opals)
+
 
     # remove temporary data frames
     dsBaseClient::ds.rm(c("m_t1", "m", "mw"))
