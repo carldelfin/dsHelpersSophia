@@ -42,7 +42,7 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
     # --------------------------------------------------------------------------------------------------
     
     cat("\n")
-    cat("Creating baseline data frame.../n")
+    cat("Creating baseline data frame...\n")
     
     # load person table
     dsQueryLibrary::dsqLoad(symbol = "baseline",
