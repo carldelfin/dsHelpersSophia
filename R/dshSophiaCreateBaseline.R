@@ -107,7 +107,7 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
                                         join.type = "full",
                                         datasources = opals)
             
-            dsBaseClient::ds.rm("tmp")
+            invisible(dsBaseClient::ds.rm("tmp"))
         }
     } 
     
@@ -176,15 +176,14 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
                                         datasources = opals)
             
             # clean up
-            dsBaseClient::ds.rm("tmp")
+            invisible(dsBaseClient::ds.rm("tmp"))
         }
     }
 
     # TODO:
     # test this 
     if (!is.null(age_at_first)) {
-        
-        invisible(
+           
         where_clause <- paste0("measurement_concept_id in ('", age_at_first, "')")
     
         dsQueryLibrary::dsqLoad(symbol = "ma",
@@ -238,7 +237,6 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
                                       col.filter = "colnames(baseline) != 'f.irst_measurement_dat.e'",
                                       datasources = opals)
             
-        dsBaseClient::ds.rm("ma")
-        )
+        invisible(dsBaseClient::ds.rm("ma"))
     }
 }
