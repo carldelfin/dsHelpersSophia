@@ -16,7 +16,11 @@
 #' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dsSwissKnifeClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaMeasureDesc <- function(variable, keep_procedure = NA, keep_observation = NA, remove_procedure = NA, remove_observation = NA) {
+dshSophiaMeasureDesc <- function(variable, 
+                                 keep_procedure = NA, remove_procedure = NA,
+                                 keep_observation = NA, remove_observation = NA, 
+                                 keep_gender = NA, remove_gender = NA) {
+
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
     # the user probably did not run dshSophiaConnect() yet. Here the user may do so, after 
     # being prompted for username and password.
@@ -58,8 +62,24 @@ dshSophiaMeasureDesc <- function(variable, keep_procedure = NA, keep_observation
     } else {
         ko_fil <- NULL
     }
+    
+    # remove gender?
+    if (!is.na(remove_gender)) {
+        rg_fil <- paste0(", 'gender'")
+    } else {
+        rg_fil <- NULL
+    }
+    
+    # keep gender?
+    if (!is.na(keep_gender)) {
+        kg_fil <- paste0(", 'gender'")
+    } else {
+        kg_fil <- NULL
+    }
 
-    fil <- paste0("c('", variable, "'", rp_fil, ro_fil, kp_fil, ko_fil, ")")
+    unit_var <- paste0("unit_", strsplit(as.character(variable), "_")[[1]][[2]])
+
+    fil <- paste0("c('", variable, "'", ", '", unit_var, "'", rp_fil, ro_fil, kp_fil, ko_fil, rg_fil, kg_fil, ")")
 
     dsSwissKnifeClient::dssSubset("baseline_tmp",
                                   "baseline",
@@ -90,151 +110,152 @@ dshSophiaMeasureDesc <- function(variable, keep_procedure = NA, keep_observation
                                       datasources = opals)
     }
     
-    # remove observation?
+    # keep observation?
     if (!is.na(keep_observation)) {
         dsSwissKnifeClient::dssSubset("baseline_tmp",
                                       "baseline_tmp",
                                       row.filter = paste0("has_", keep_observation, " == 1"),
                                       datasources = opals)
     }
+    
+    # remove gender?
+    if (!is.na(remove_gender)) {
+        dsSwissKnifeClient::dssSubset("baseline_tmp",
+                                      "baseline_tmp",
+                                      row.filter = paste0("gender != '", toupper(keep_gender), "'"),
+                                      datasources = opals)
+    }
+    
+    # keep gender?
+    if (!is.na(keep_gender)) {
+        dsSwissKnifeClient::dssSubset("baseline_tmp",
+                                      "baseline_tmp",
+                                      row.filter = paste0("gender == '", toupper(keep_gender), "'"),
+                                      datasources = opals)
+    }
 
     # remove NAs 
-    dsBaseClient::ds.completeCases(x1 = "baseline_tmp",
-                                   newobj = "baseline_tmp",
-                                   datasources = opals)
-    
+    invisible(dsBaseClient::ds.completeCases(x1 = "baseline_tmp",
+                                             newobj = "baseline_tmp",
+                                             datasources = opals))
+
     concept_id <- stringr::str_split(variable, "_", n = 3)[[1]][[2]]
+    concept_unit <- ds.levels(paste0("baseline_tmp$", unit_var))
+    concept_unit <- gsub("unit.", "", concept_unit[[1]][[1]])
 
-    tryCatch(
-             expr = {
+    tmp_summary <- dsBaseClient::ds.summary(paste0("baseline_tmp$", variable))[[1]]
 
-                 if (fil == paste0("c('", variable, "')")) {
+    if (length(tmp_summary)[[1]] == 1) {
 
-                     tmp_summary <- dsBaseClient::ds.summary("baseline_tmp")[[1]]
-                     tmp_var <- dsBaseClient::ds.var("baseline_tmp")
-                     tmp_range <- dsSwissKnifeClient::dssRange("baseline_tmp")
-                     time <- stringr::str_split(variable, "_", n = 3)[[1]][[1]]
+        out <- data.frame(concept_id = concept_id,
+                          concept_unit = concept_unit,
+                          time = NA,
+                          mean_days_since_t1 = NA,
+                          median_days_since_t1 = NA,
+                          type = NA,
+                          n = NA,
+                          mean = NA,
+                          sd = NA,
+                          se = NA,
+                          median = NA,
+                          q1 = NA,
+                          q3 = NA,
+                          iqr = NA,
+                          min = NA,
+                          max = NA)
 
-                     if (length(stringr::str_split(variable, "_", n = 3)[[1]]) == 2) {
-                         type <- "raw_score"
-                     } else {
-                         type <- stringr::str_split(variable, "_", n = 3)[[1]][[3]]
-                     }
+    } else if (tmp_summary[[2]] < 5) {
 
-                     out <- data.frame(concept_id = concept_id,
-                                       time = time,
-                                       type = type,
-                                       n = tmp_var[[1]][[3]],
-                                       mean = tmp_summary[[3]][[8]],
-                                       sd = sqrt(tmp_var[[1]][[1]]),
-                                       se = sqrt(tmp_var[[1]][[1]]) / sqrt(tmp_var[[1]][[4]]),
-                                       median = tmp_summary[[3]][[4]],
-                                       q1 = tmp_summary[[3]][[3]],
-                                       q3 = tmp_summary[[3]][[5]],
-                                       iqr = tmp_summary[[3]][[5]] - tmp_summary[[3]][[3]],
-                                       min = tmp_range[[1]][[1]][[1]],
-                                       max = tmp_range[[1]][[1]][[2]])
-                 } else {
+        out <- data.frame(concept_id = concept_id,
+                          concept_unit = concept_unit,
+                          time = NA,
+                          mean_days_since_t1 = NA,
+                          median_days_since_t1 = NA,
+                          type = NA,
+                          n = NA,
+                          mean = NA,
+                          sd = NA,
+                          se = NA,
+                          median = NA,
+                          q1 = NA,
+                          q3 = NA,
+                          iqr = NA,
+                          min = NA,
+                          max = NA)
 
-                     tmp_summary <- dsBaseClient::ds.summary(paste0("baseline_tmp$", variable))
+    } else {
 
-                     if (length(tmp_summary[[1]]) == 1) {
-                         out <- data.frame(concept_id = concept_id,
-                                           time = NA,
-                                           type = NA,
-                                           n = NA,
-                                           mean = NA,
-                                           sd = NA,
-                                           se = NA,
-                                           median = NA,
-                                           q1 = NA,
-                                           q3 = NA,
-                                           iqr = NA,
-                                           min = NA,
-                                           max = NA)
-                     } else if (tmp_summary[[1]][[2]] < 5) {
-                         out <- data.frame(concept_id = concept_id,
-                                           time = NA,
-                                           type = NA,
-                                           n = NA,
-                                           mean = NA,
-                                           sd = NA,
-                                           se = NA,
-                                           median = NA,
-                                           q1 = NA,
-                                           q3 = NA,
-                                           iqr = NA,
-                                           min = NA,
-                                           max = NA)
-                     } else {
-                         tmp_summary <- tmp_summary[[1]]
-                         tmp_var <- dsBaseClient::ds.var(paste0("baseline_tmp$", variable))
-                         tmp_range <- dsSwissKnifeClient::dssRange(paste0("baseline_tmp$", variable))
-                         time <- stringr::str_split(variable, "_", n = 3)[[1]][[1]]
+        tmp_days <- dsBaseClient::ds.summary(paste0("baseline$", variable, "_days_since_t1"))[[1]]
+        tmp_var <- dsBaseClient::ds.var(paste0("baseline_tmp$", variable))
+        tmp_range <- dsSwissKnifeClient::dssRange(paste0("baseline_tmp$", variable))
+        time <- stringr::str_split(variable, "_", n = 3)[[1]][[1]]
 
-                         if (length(stringr::str_split(variable, "_", n = 3)[[1]]) == 2) {
-                             type <- "raw_score"
-                         } else {
-                             type <- stringr::str_split(variable, "_", n = 3)[[1]][[3]]
-                         }
+        if (length(stringr::str_split(variable, "_", n = 3)[[1]]) == 2) {
+            type <- "raw_score"
+        } else {
+            type <- stringr::str_split(variable, "_", n = 3)[[1]][[3]]
+        }
 
-                         out <- data.frame(concept_id = concept_id,
-                                           time = time,
-                                           type = type,
-                                           n = tmp_var[[1]][[3]],
-                                           mean = tmp_summary[[3]][[8]],
-                                           sd = sqrt(tmp_var[[1]][[1]]),
-                                           se = sqrt(tmp_var[[1]][[1]]) / sqrt(tmp_var[[1]][[4]]),
-                                           median = tmp_summary[[3]][[4]],
-                                           q1 = tmp_summary[[3]][[3]],
-                                           q3 = tmp_summary[[3]][[5]],
-                                           iqr = tmp_summary[[3]][[5]] - tmp_summary[[3]][[3]],
-                                           min = tmp_range[[1]][[1]][[1]],
-                                           max = tmp_range[[1]][[1]][[2]])
-                     }
+        out <- data.frame(concept_id = concept_id,
+                          concept_unit = concept_unit,
+                          time = time,
+                          mean_days_since_t1 = tmp_days[[3]][[8]],
+                          median_days_since_t1 = tmp_days[[3]][[4]],
+                          type = type,
+                          n = tmp_var[[1]][[3]],
+                          mean = tmp_summary[[3]][[8]],
+                          sd = sqrt(tmp_var[[1]][[1]]),
+                          se = sqrt(tmp_var[[1]][[1]]) / sqrt(tmp_var[[1]][[4]]),
+                          median = tmp_summary[[3]][[4]],
+                          q1 = tmp_summary[[3]][[3]],
+                          q3 = tmp_summary[[3]][[5]],
+                          iqr = tmp_summary[[3]][[5]] - tmp_summary[[3]][[3]],
+                          min = tmp_range[[1]][[1]][[1]],
+                          max = tmp_range[[1]][[1]][[2]])
 
-                 }
+    }
 
-                 # remove observation
-                 if (!is.null(remove_observation)) {
-                     out$remove_observation <- remove_observation 
-                 } else {
-                     out$remove_observation <- NA
-                 }
+    # remove observation
+    if (!is.null(remove_observation)) {
+        out$remove_observation <- remove_observation 
+    } else {
+        out$remove_observation <- NA
+    }
 
-                 # keep observation
-                 if (!is.null(keep_observation)) {
-                     out$keep_observation <- keep_observation 
-                 } else {
-                     out$keep_observation <- NA
-                 }
+    # keep observation
+    if (!is.null(keep_observation)) {
+        out$keep_observation <- keep_observation 
+    } else {
+        out$keep_observation <- NA
+    }
 
-                 # remove procedure
-                 if (!is.null(remove_procedure)) {
-                     out$remove_procedure <- remove_procedure 
-                 } else {
-                     out$remove_procedure <- NA
-                 }
+    # remove procedure
+    if (!is.null(remove_procedure)) {
+        out$remove_procedure <- remove_procedure 
+    } else {
+        out$remove_procedure <- NA
+    }
 
-                 # keep procedure
-                 if (!is.null(keep_procedure)) {
-                     out$keep_procedure <- keep_procedure 
-                 } else {
-                     out$keep_procedure <- NA
-                 }
+    # keep procedure
+    if (!is.null(keep_procedure)) {
+        out$keep_procedure <- keep_procedure 
+    } else {
+        out$keep_procedure <- NA
+    }
 
-                 return(out)
+    # remove gender
+    if (!is.null(remove_gender)) {
+        out$remove_gender <- remove_gender 
+    } else {
+        out$remove_gender <- NA
+    }
 
-             },
+    # keep gender
+    if (!is.null(keep_gender)) {
+        out$keep_gender <- keep_gender 
+    } else {
+        out$keep_gender <- NA
+    }
 
-             error = function(e) {
-
-                 cat("\nError using\n",
-                     "keep_procedure =", keep_procedure, "\n",
-                     "keep_observation =", keep_observation, "\n",
-                     "remove_procedure =", remove_procedure, "\n",
-                     "remove_observation =", remove_observation, "\n")
-
-                 print(e)
-             })
+    return(out)
 }
