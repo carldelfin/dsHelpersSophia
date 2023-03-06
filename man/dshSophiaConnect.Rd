@@ -9,7 +9,9 @@ dshSophiaConnect(
   password = Sys.getenv("fdb_password"),
   error = "exclude",
   include = NULL,
-  exclude = NULL
+  exclude = NULL,
+  append_name = NULL,
+  restore = NULL
 )
 }
 \arguments{

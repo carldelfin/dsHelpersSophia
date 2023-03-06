@@ -4,7 +4,11 @@
 \alias{dshSophiaCreateBaseline}
 \title{Create a baseline data frame on the federated node}
 \usage{
-dshSophiaCreateBaseline(procedure_id = NULL)
+dshSophiaCreateBaseline(
+  procedure_id = NULL,
+  observation_id = NULL,
+  age_at_first = NULL
+)
 }
 \value{
 A federated data frame named 'baseline'.

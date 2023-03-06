@@ -7,8 +7,8 @@
 dshSophiaGetBeta(
   outcome,
   predictor,
-  coviariate,
-  subset_procedure = FALSE,
+  covariate = NULL,
+  subset_procedure = NULL,
   standardized = TRUE
 )
 }
@@ -32,7 +32,7 @@ dshSophiaCreateBaseline(concept_id = c(4111665, 3004410, 3001308))
 # add a longitudinal measure
 dshSophiaMergeLongMeas(concept_id = 3038553)
 
-# check result
+# check resul:qt
 dsBaseClient::ds.summary("baseline")
 }
 }

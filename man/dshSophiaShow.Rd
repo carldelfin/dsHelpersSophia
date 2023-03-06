@@ -6,7 +6,8 @@
 \usage{
 dshSophiaShow(
   username = Sys.getenv("fdb_user"),
-  password = Sys.getenv("fdb_password")
+  password = Sys.getenv("fdb_password"),
+  error = "exclude"
 )
 }
 \arguments{

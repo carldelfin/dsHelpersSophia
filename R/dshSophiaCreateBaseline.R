@@ -237,5 +237,6 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
                                       col.filter = "colnames(baseline) != 'f.irst_measurement_dat.e'",
                                       datasources = opals)
             
-        dsBaseClient::ds.rm("ma")
+        dsBaseclient::ds.rm("ma")
+    }
 }
