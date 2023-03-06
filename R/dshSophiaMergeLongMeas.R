@@ -60,7 +60,7 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE) {
             message("\nUnable to load measurement table, maybe the variable doesn't exist or you forgot to run 'dshSophiaLoad()'?")
     })
     
-    # make sure it is ordered by ID and measurement data
+    # make sure it is ordered by ID and measurement date
     dsSwissKnifeClient::dssSubset("m",
                                   "m",
                                   "order(person_id, measurement_date)")
@@ -73,7 +73,7 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE) {
                                  by.col = "person_id",
                                  fun.aggregate = length,
                                  datasources = opals)
-    
+   
     curr_concept_id <- dsBaseClient::ds.summary("mw")[[1]][[4]][2]
     num_timepoints <- dsBaseClient::ds.summary(paste0("mw$", curr_concept_id))[[1]][[3]][[7]]
     
@@ -222,7 +222,16 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE) {
                                 by = "person_id",
                                 join.type = "full",
                                 datasources = opals)
-
+    
+    # fetch concept unit
+    dsSwissKnifeClient::dssPivot(symbol = "mu",
+                                 what = "m",
+                                 value.var = "value_as_number",
+                                 formula = "person_id ~ unit",
+                                 by.col = "person_id",
+                                 fun.aggregate = "function(x) x[1]",
+                                 datasources = opals)
+    
 
     # remove temporary data frames
     dsBaseClient::ds.rm(c("m_t1", "m", "mw"))

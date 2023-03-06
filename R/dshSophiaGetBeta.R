@@ -103,7 +103,7 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = NULL, subset_proced
       out <- data.frame(outcome = outcome,
                         predictor = predictor,
                         valid_n = NA,
-                        intercent = NA,
+                        intercept = NA,
                         beta = NA,
                         se = NA,
                         p.value = NA,
@@ -160,7 +160,8 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = NULL, subset_proced
                        # get relevant results and put into data frame
                        coefs <- as.data.frame(mod$coefficients)
                        coefs$predictor <- rownames(coefs)
-                       coefs <- coefs[coefs$predictor == predictor, ]
+                       coefsp <- coefs[coefs$predictor == predictor, ]
+                       coefsi <- coefs[coefs$predictor == "(Intercept)", ]
 
                        out <- data.frame(outcome = outcome,
                                          predictor = predictor,
