@@ -183,7 +183,8 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
     # TODO:
     # test this 
     if (!is.null(age_at_first)) {
-           
+        
+        invisible(
         where_clause <- paste0("measurement_concept_id in ('", age_at_first, "')")
     
         dsQueryLibrary::dsqLoad(symbol = "ma",
@@ -238,5 +239,6 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
                                       datasources = opals)
             
         dsBaseClient::ds.rm("ma")
+        )
     }
 }
