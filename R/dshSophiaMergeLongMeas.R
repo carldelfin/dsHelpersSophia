@@ -22,7 +22,7 @@
 #' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dsSwissKnifeClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE) {
+dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, unit = TRUE) {
 
     # ----------------------------------------------------------------------------------------------
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
@@ -49,12 +49,12 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE) {
             where_clause <- paste0("measurement_concept_id in ('", concept_id, "')")
             
             # load the measurement table
-            dsQueryLibrary::dsqLoad(symbol = "m",
-                                    domain = "concept_name",
-                                    query_name = "measurement",
-                                    where_clause = where_clause,
-                                    union = TRUE,
-                                    datasources = opals)
+            invisible(dsQueryLibrary::dsqLoad(symbol = "m",
+                                              domain = "concept_name",
+                                              query_name = "measurement",
+                                              where_clause = where_clause,
+                                              union = TRUE,
+                                              datasources = opals))
         },
         error = function(e) { 
             message("\nUnable to load measurement table, maybe the variable doesn't exist or you forgot to run 'dshSophiaLoad()'?")
@@ -223,16 +223,28 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE) {
                                 join.type = "full",
                                 datasources = opals)
     
-    # fetch concept unit
-    dsSwissKnifeClient::dssPivot(symbol = "mu",
-                                 what = "m",
-                                 value.var = "value_as_number",
-                                 formula = "person_id ~ unit",
-                                 by.col = "person_id",
-                                 fun.aggregate = "function(x) x[1]",
-                                 datasources = opals)
-    
+    if (unit == TRUE) {
+   
+        dsSwissKnifeClient::dssPivot(symbol = "mu",
+                                     what = "m",
+                                     value.var = "unit",
+                                     formula = "person_id ~ unit",
+                                     by.col = "person_id",
+                                     fun.aggregate = "function(x) x[1]",
+                                     datasources = opals)
 
-    # remove temporary data frames
-    dsBaseClient::ds.rm(c("m_t1", "m", "mw"))
+        invisible(dsSwissKnifeClient::dssColNames("mu", 
+                                                  value = c("person_id", paste0("unit_", name2))))
+
+        dsSwissKnifeClient::dssJoin(c("mu", "baseline"),
+                                    symbol = "baseline",
+                                    by = "person_id",
+                                    join.type = "full",
+                                    datasources = opals)
+
+        invisible(dsBaseClient::ds.rm("mu"))
+
+    }
+
+    invisible(dsBaseClient::ds.rm(c("m_t1", "m", "mw")))
 }
