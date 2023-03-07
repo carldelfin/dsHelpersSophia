@@ -19,7 +19,7 @@
 #' @import DSOpal opalr httr DSI dsQueryLibrary dsResource dsBaseClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, age_at_first = NULL) {
+dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, approx_age = NULL) {
 
     # ----------------------------------------------------------------------------------------------
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
@@ -184,9 +184,9 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
         }
     }
 
-    if (!is.null(age_at_first)) {
+    if (!is.null(approx_age)) {
            
-        where_clause <- paste0("measurement_concept_id in ('", age_at_first, "')")
+        where_clause <- paste0("measurement_concept_id in ('", approx_age, "')")
     
         dsQueryLibrary::dsqLoad(symbol = "ma",
                                 domain = "concept_name",
