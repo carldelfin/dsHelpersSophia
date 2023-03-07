@@ -19,7 +19,7 @@
 #' @import DSOpal opalr httr DSI dsQueryLibrary dsResource dsBaseClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, approx_age = NULL) {
+dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, age_at_first = NULL, age_at_year = NULL) {
 
     # ----------------------------------------------------------------------------------------------
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
@@ -184,9 +184,9 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
         }
     }
 
-    if (!is.null(approx_age)) {
+    if (!is.null(age_at_first)) {
            
-        where_clause <- paste0("measurement_concept_id in ('", approx_age, "')")
+        where_clause <- paste0("measurement_concept_id in ('", age_at_first, "')")
     
         dsQueryLibrary::dsqLoad(symbol = "ma",
                                 domain = "concept_name",
@@ -231,7 +231,7 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
                                     datasources = opals)
 
         dsSwissKnifeClient::dssDeriveColumn("baseline", 
-                                            "approx_age", 
+                                            paste0("age_at_first_", age_at_first), 
                                             "round((f.irst_measurement_dat.e - as.numeric(as.Date(year_of_birth, origin = '1970-01-01'))) / 365)")
         
         dsSwissKnifeClient::dssSubset("baseline",
@@ -241,6 +241,17 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
             
         invisible(dsBaseClient::ds.rm("ma"))
 
-        cat("\n")
     }
+    
+    if (!is.null(age_at_year)) {
+           
+        dsSwissKnifeClient::dssDeriveColumn("baseline", 
+                                            paste0("age_at_year_", age_at_year), 
+                                            paste0("round((as.numeric(as.Date(", 
+                                                   age_at_year,
+                                                   ", origin = '1970-01-01')) - as.numeric(as.Date(year_of_birth, origin = '1970-01-01'))) / 365)"))
+
+    }
+    
+    cat("\n")
 }
