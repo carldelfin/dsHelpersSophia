@@ -184,8 +184,6 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
         }
     }
 
-    # TODO:
-    # test this 
     if (!is.null(age_at_first)) {
            
         where_clause <- paste0("measurement_concept_id in ('", age_at_first, "')")
@@ -233,7 +231,7 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
                                     datasources = opals)
 
         dsSwissKnifeClient::dssDeriveColumn("baseline", 
-                                            paste0("approx_age_at_first_", age_at_first), 
+                                            "approx_age", 
                                             "round((f.irst_measurement_dat.e - as.numeric(as.Date(year_of_birth, origin = '1970-01-01'))) / 365)")
         
         dsSwissKnifeClient::dssSubset("baseline",
