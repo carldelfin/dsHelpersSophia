@@ -41,8 +41,9 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
     # get year of birth and gender from person table
     # --------------------------------------------------------------------------------------------------
     
-    cat("\n")
-    cat("Creating baseline data frame\n")
+    cat("\n\n")
+    cat("Creating baseline data frame")
+    cat("\n\n")
     
     # load person table
     dsQueryLibrary::dsqLoad(symbol = "baseline",

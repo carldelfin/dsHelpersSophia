@@ -123,7 +123,7 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
     }
 
     # finally, let the user know which cohorts are accessible
-    cat("\n")
+    cat("\n\n")
     cat("You are now connected to the following", nrow(nodes_and_cohorts), "cohort(s) via the federated database:\n")
     cat(nodes_and_cohorts$name, "\n\n")
 }
