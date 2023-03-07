@@ -41,7 +41,7 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
     # get year of birth and gender from person table
     # --------------------------------------------------------------------------------------------------
     
-    cat("\n\n")
+    cat("\n")
     cat("Creating baseline data frame")
     cat("\n\n")
     
@@ -247,9 +247,7 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
            
         dsSwissKnifeClient::dssDeriveColumn("baseline", 
                                             paste0("age_at_year_", age_at_year), 
-                                            paste0("round((as.numeric(as.Date(", 
-                                                   age_at_year,
-                                                   ", origin = '1970-01-01')) - as.numeric(as.Date(year_of_birth, origin = '1970-01-01'))) / 365)"))
+                                            paste0(age_at_year, " - year_of_birth"))
 
     }
     
