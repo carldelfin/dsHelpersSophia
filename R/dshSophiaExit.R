@@ -22,4 +22,6 @@ dshSophiaExit <- function() {
         expr = { DSI::datashield.logout(opals) },
         error = function(e) { message("\nUnable to disconnect, are you sure you are connected?") }
     )
+
+    cat("\n")
 }
