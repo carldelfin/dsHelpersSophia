@@ -49,4 +49,6 @@ dshSophiaLoad <- function() {
         
         if (skip_to_next) { next }
     }
+
+    cat("\n")
 }
