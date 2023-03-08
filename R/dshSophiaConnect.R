@@ -47,9 +47,8 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
     }
     
     #
-    if (error_nodes %in% include) {
-        cat("\nThe node you included is not available! Aborting...\n")
-        stop()
+    if (include %in% error_nodes$node_name) {
+        stop("The node you included is not available! Aborting...\n")
     }
 
     if (!is.null(include)) { 
