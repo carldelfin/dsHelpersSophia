@@ -26,7 +26,6 @@
 #' @export
 dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
                              password = Sys.getenv("fdb_password"),
-                             error = "exclude",
                              include = NULL,
                              exclude = NULL,
                              append_name = NULL,
@@ -38,15 +37,19 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
     available_nodes$node_name <- trimws(available_nodes$X, whitespace = ".*\\/")
     colnames(available_nodes) <- c("url", "error_code", "node_name")
     
-    if (error == "exclude") {
-        error_nodes <- subset(available_nodes, error_code == 1)
-        available_nodes <- subset(available_nodes, error_code == 0)
+    error_nodes <- subset(available_nodes, error_code == 1)
+    available_nodes <- subset(available_nodes, error_code == 0)
         
-        # let user know which nodes were exluded, if any
-        if (!is.null(error_nodes)) {
-            cat("\nNOTE! The following node(s) will be exluded due to connection errors:\n")
-            cat(error_nodes$node_name, "\n")
-        }
+    # let user know which nodes were exluded, if any
+    if (!is.null(error_nodes)) {
+        cat("\nNOTE! The following node(s) will be exluded due to connection errors:\n")
+        cat(error_nodes$node_name, "\n")
+    }
+    
+    #
+    if (error_nodes %in% include) {
+        cat("\nThe node you included is not available! Aborting...\n")
+        stop()
     }
 
     if (!is.null(include)) { 
