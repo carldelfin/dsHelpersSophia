@@ -76,7 +76,7 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
     # get list of all available projects (cohorts)
     projects <- sapply(opals, function(x) opalr::opal.projects(x@opal), simplify = FALSE)
     projects <- sapply(names(projects), function(x) {
-        return(projects[[x]][!(projects[[x]]$name %in% c("sophia", "omop_test", "a_test")), , drop = FALSE])
+        return(projects[[x]][!(projects[[x]]$name %in% c("sophia", "omop_test", "a_test", "big_db_test")), , drop = FALSE])
     }, simplify = FALSE)
 
     # create a dataframe in long format with all cohorts (projects)
