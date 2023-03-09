@@ -7,7 +7,8 @@
 dshSophiaCreateBaseline(
   procedure_id = NULL,
   observation_id = NULL,
-  age_at_first = NULL
+  age_at_first = NULL,
+  age_at_year = NULL
 )
 }
 \value{

@@ -22,13 +22,10 @@
 #' @import DSOpal opalr httr DSI dsBaseClient dsSwissKnifeClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaGetBeta <- function(outcome, predictor, covariate = NULL, subset_procedure = NULL, standardized = TRUE) {
-    
-    # ----------------------------------------------------------------------------------------------
-    # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
-    # the user probably did not run dshSophiaConnect() yet. Here the user may do so, after 
-    # being prompted for username and password.
-    # ----------------------------------------------------------------------------------------------
+dshSophiaGetBeta <- function(outcome, pred, covariate = NA, 
+                             keep_procedure = NA, remove_procedure = NA,
+                             keep_observation = NA, remove_observation = NA, 
+                             standardize_all = FALSE, standardize_pred = TRUE) {
     
     if (exists("opals") == FALSE || exists("nodes_and_cohorts") == FALSE) {
         cat("")
@@ -38,215 +35,255 @@ dshSophiaGetBeta <- function(outcome, predictor, covariate = NULL, subset_proced
                dshSophiaPrompt(),
                stop("Aborting..."))
     }
-  
-    cat("\n\nModelling variable:", predictor, "\n\n")
-    
-    # create subset formula
-    if (is.null(subset_procedure)) {
-        if (is.null(covariate)) {
-            cols <- paste0("colnames(baseline) %in% c('",
-                           outcome,
-                           "', '",
-                           predictor,
-                           "')")
-        } else {
-            cols <- paste0("colnames(baseline) %in% c('",
-                           outcome,
-                           "', '",
-                           predictor,
-                           "', '",
-                           paste0(covariate, collapse = "', '"),
-                           "')")
-        }
+
+    # remove procedure?
+    if (!is.na(remove_procedure)) {
+        rp_fil <- paste0(", 'has_", remove_procedure, "'")
     } else {
-        if (is.null(covariate)) {
-            cols <- paste0("colnames(baseline) %in% c('",
-                           paste0("has_", subset_procedure),
-                           "', '",
-                           outcome,
-                           "', '",
-                           predictor,
-                           "')")
-        } else {
-            cols <- paste0("colnames(baseline) %in% c('",
-                           paste0("has_", subset_procedure),
-                           "', '",
-                           outcome,
-                           "', '",
-                           predictor,
-                           "', '",
-                           paste0(covariate, collapse = "', '"),
-                           "')")
-        }
+        rp_fil <- NULL
     }
-    # subset
-    dsSwissKnifeClient::dssSubset("baseline_tmp", 
-                                  "baseline",
-                                  col.filter = cols,
-                                  datasources = opals)
     
-    if (!(is.null(subset_procedure))) {
-        # subset to procedure == 1 
-        dsSwissKnifeClient::dssSubset("baseline_tmp",
-                                      "baseline_tmp",
-                                      row.filter = paste0("has_", subset_procedure, " == 1"))
+    # keep procedure?
+    if (!is.na(keep_procedure)) {
+        kp_fil <- paste0(", 'has_", keep_procedure, "'")
+    } else {
+        kp_fil <- NULL
     }
 
-    # remove NAs
-    dsBaseClient::ds.completeCases(x1 = "baseline_tmp",
-                                   newobj = "baseline_tmp",
-                                   datasources = opals)
+
+    # remove observation?
+    if (!is.na(remove_observation)) {
+        ro_fil <- paste0(", 'has_", remove_observation, "'")
+    } else {
+        ro_fil <- NULL
+    }
+    
+    # keep observation?
+    if (!is.na(keep_observation)) {
+        ko_fil <- paste0(", 'has_", keep_observation, "'")
+    } else {
+        ko_fil <- NULL
+    }
+    
+    # covariate(s)?
+    if (!any(is.na(covariate))) {
+        cov_fil <- paste0(", '", paste0(covariate, collapse = "', '"), "'")
+    } else {
+        cov_fil <- NULL
+    }
+
+    fil <- paste0("c('person_id', ",
+                  "'", outcome, "', ", 
+                  "'", pred, "'", 
+                  cov_fil, rp_fil, ro_fil, kp_fil, ko_fil, ")")
+
+    dsSwissKnifeClient::dssSubset("baseline_tmp",
+                                  "baseline",
+                                  col.filter = fil,
+                                  datasources = opals)
+ 
+    # remove procedure?
+    if (!is.na(remove_procedure)) {
+        dsSwissKnifeClient::dssSubset("baseline_tmp",
+                                      "baseline_tmp",
+                                      row.filter = paste0("has_", remove_procedure, " == 0"),
+                                      datasources = opals)
+    } 
+    
+    # keep procedure?
+    if (!is.na(keep_procedure)) {
+        dsSwissKnifeClient::dssSubset("baseline_tmp",
+                                      "baseline_tmp",
+                                      row.filter = paste0("has_", keep_procedure, " == 1"),
+                                      datasources = opals)
+    } 
+
+    # remove observation?
+    if (!is.na(remove_observation)) {
+        dsSwissKnifeClient::dssSubset("baseline_tmp",
+                                      "baseline_tmp",
+                                      row.filter = paste0("has_", remove_observation, " == 0"),
+                                      datasources = opals)
+    }
+    
+    # keep observation?
+    if (!is.na(keep_observation)) {
+        dsSwissKnifeClient::dssSubset("baseline_tmp",
+                                      "baseline_tmp",
+                                      row.filter = paste0("has_", keep_observation, " == 1"),
+                                      datasources = opals)
+    }
+    
+    # remove NAs 
+    invisible(dsBaseClient::ds.completeCases(x1 = "baseline_tmp",
+                                             newobj = "baseline_tmp",
+                                             datasources = opals))
+
+
+    # scale all?
+    if (standardize_all == TRUE) {
+        dsSwissKnifeClient::dssScale("baseline_tmp",
+                                     "baseline_tmp",
+                                     datasources = opals)
+    }
+
+    # scale predictor(s)? 
+    if (standardize_pred == TRUE) {
+
+        scale_fil <- paste0("c('person_id', ",
+                            "'", pred, "'", 
+                            cov_fil, ")")
+
+        dsSwissKnifeClient::dssSubset("baseline_pred",
+                                      "baseline_tmp",
+                                      col.filter = scale_fil,
+                                      datasources = opals)
+        
+        dsSwissKnifeClient::dssScale("baseline_pred",
+                                     "baseline_pred",
+                                     datasources = opals)
+        
+        dsSwissKnifeClient::dssSubset("baseline_outcome",
+                                      "baseline_tmp",
+                                      col.filter = paste0("c('person_id', '", outcome, "')"),
+                                      datasources = opals)
+        
+        dsSwissKnifeClient::dssJoin(c("baseline_outcome", "baseline_pred"),
+                                    symbol = "baseline_tmp",
+                                    by = "person_id",
+                                    join.type = "full",
+                                    datasources = opals)
+
+        dsSwissKnifeClient::dssDeriveColumn("baseline_tmp",
+                                            predictor,
+                                            paste0("scale(", predictor, ")"),
+                                            datasources = opals)
+    }
+
+    # need to create numeric gender if used as covariate
+    if ("gender" %in% covariate) {
+        dsSwissKnifeClient::dssDeriveColumn("baseline_tmp",
+                                            "gender",
+                                            "as.numeric(gender) - 1",
+                                            datasources = opals)
+    }
+
     # get a temporary summary
-    tmp <- dsBaseClient::ds.summary(paste0("baseline_tmp$", predictor))
+    tmp <- dsBaseClient::ds.summary(paste0("baseline_tmp$", pred))
     
     if (length(tmp[[1]]) == 1) {
-      out <- data.frame(outcome = outcome,
-                        predictor = predictor,
-                        valid_n = NA,
-                        intercept = NA,
-                        beta = NA,
-                        se = NA,
-                        p.value = NA,
-                        ci.low = NA,
-                        ci.high = NA)
+
+        out <- data.frame(outcome = outcome,
+                          predictor = pred,
+                          covariate = paste0(covariate, collapse = "."),
+                          valid.n = NA,
+                          intercept.beta = NA,
+                          intercept.se = NA,
+                          intercept.p.val = NA,
+                          intercept.ci.low = NA,
+                          intercept.ci.high = NA,
+                          predictor.beta = NA,
+                          predictor.se = NA,
+                          predictor.p.val = NA,
+                          predictor.ci.low = NA,
+                          predictor.ci.high = NA,
+                          keep_procedure = keep_procedure,
+                          remove_procedure = remove_procedure,
+                          keep_observation = keep_observation,
+                          remove_observation = remove_observation,
+                          standardize_all = standardize_all,
+                          standardize_pred = standardize_pred)
+
     } else {
+
       # numeric/integer outcome
       if (tmp[[1]][[1]] == "numeric" | tmp[[1]][[1]] == "integer") {
         
         # if outcome is NA, Inf, have mean == 0, or
-        # length (valid N) < 20
+        # length (valid N) < 5
         # return empty
-        if (is.na(tmp[[1]][[3]][[8]]) | tmp[[1]][[3]][[8]] == 0 | tmp[[1]][[3]][[8]] == Inf | tmp[[1]][[2]] < 20) {
+        if (is.na(tmp[[1]][[3]][[8]]) | tmp[[1]][[3]][[8]] == 0 | tmp[[1]][[3]][[8]] == Inf | tmp[[1]][[2]] < 5) {
           
           # return empty 
           out <- data.frame(outcome = outcome,
-                            predictor = predictor,
-                            valid_n = NA,
-                            intercept = NA,
-                            beta = NA,
-                            se = NA,
-                            p.value = NA,
-                            ci.low = NA,
-                            ci.high = NA)
-          
+                            predictor = pred,
+                            covariate = paste0(covariate, collapse = "."),
+                            valid.n = "< 5",
+                            intercept.beta = NA,
+                            intercept.se = NA,
+                            intercept.p.val = NA,
+                            intercept.ci.low = NA,
+                            intercept.ci.high = NA,
+                            predictor.beta = NA,
+                            predictor.se = NA,
+                            predictor.p.val = NA,
+                            predictor.ci.low = NA,
+                            predictor.ci.high = NA,
+                            keep_procedure = keep_procedure,
+                            remove_procedure = remove_procedure,
+                            keep_observation = keep_observation,
+                            remove_observation = remove_observation,
+                            standardize_all = standardize_all,
+                            standardize_pred = standardize_pred)
+
         } else {
-          
-          # scale if standardized output is requested (default is TRUE)
-          if (standardized == TRUE) {
-            dsSwissKnifeClient::dssScale("baseline_tmp",
-                                         "baseline_tmp",
-                                         datasources = opals)
-            
-          }
-          
-          if (is.null(covariate)) {
-            formula <- as.formula(paste0(outcome, " ~ 1 +", predictor))
-          } else {
-            formula <- as.formula(paste0(outcome, " ~ 1 +", paste0(covariate, collapse = "+"), "+", predictor))
-          }
 
-          tryCatch(
-                   expr = {
-                       mod <- dsBaseClient::ds.glm(formula = formula,
-                                                   data = "baseline_tmp",
-                                                   family = "gaussian",
-                                                   maxit = 20,
-                                                   CI = 0.95,
-                                                   viewIter = FALSE,
-                                                   viewVarCov = FALSE,
-                                                   viewCor = FALSE,
-                                                   datasources = opals)
+            tryCatch(expr = { 
 
-                       # get relevant results and put into data frame
-                       coefs <- as.data.frame(mod$coefficients)
-                       coefs$predictor <- rownames(coefs)
-                       coefsp <- coefs[coefs$predictor == predictor, ]
-                       coefsi <- coefs[coefs$predictor == "(Intercept)", ]
+                         mod <- dsSwissKnifeClient::dssLM(what = "baseline_tmp",
+                                                          type = "split",
+                                                          dep_var = outcome,
+                                                          expl_vars = c(pred, covariate),
+                                                          datasources = opals) %>% 
+                         as.data.frame() %>% 
+                         tibble::rownames_to_column("predictor") 
 
-                       out <- data.frame(outcome = outcome,
-                                         predictor = predictor,
-                                         valid_n = mod$Nvalid,
-                                         intercept = ,
-                                         beta = coefs[[1]],
-                                         se = ,
-                                         p.value = coefs[[4]],
-                                         ci.low = coefs[[5]],
-                                         ci.high = coefs[[6]])
+                         colnames(mod) <- gsub(paste0(names(opals), "."), "", colnames(mod))
+                         res_intercept <- mod[1, ]
+                         res_intercept$predictor <- "intercept"
+                         res_predictor <- mod %>% filter(predictor == pred)
 
-                       message("GLM was successfull!")
-                   },
-                   error = function(e) {
-                       message("Caught an error!")
-                       print(e)
-                       print(datashield.errors())
-                   })
+                         out <- data.frame(outcome = outcome,
+                                           predictor = pred,
+                                           covariate = paste0(covariate, collapse = "."),
+                                           valid.n = tmp[[1]][[2]],
+                                           intercept.beta = res_intercept$beta,
+                                           intercept.se = res_intercept$SE,
+                                           intercept.p.val = res_intercept$p.val,
+                                           intercept.ci.low = res_intercept$CILow,
+                                           intercept.ci.high = res_intercept$CIHigh,
+                                           predictor.beta = res_predictor$beta,
+                                           predictor.se = res_predictor$SE,
+                                           predictor.p.val = res_predictor$p.val,
+                                           predictor.ci.low = res_predictor$CILow,
+                                           predictor.ci.high = res_predictor$CIHigh,
+                                           keep_procedure = keep_procedure,
+                                           remove_procedure = remove_procedure,
+                                           keep_observation = keep_observation,
+                                           remove_observation = remove_observation,
+                                           standardize_all = standardize_all,
+                                           standardize_pred = standardize_pred)
+
+                        },
+
+                         error = function(e) {
+
+                             message("Caught an error!")
+                             print(e)
+                             print(datashield.errors())
+
+                        }
+            )
         }
-        
+
       # factor outcome
       } else {
-        
-        # scale if standardized output is requested (default is TRUE)
-        if (standardized == TRUE) {
-          dsSwissKnifeClient::dssScale("baseline_tmp",
-                                       "baseline_tmp",
-                                       datasources = opals)
-          
-        }
-        
-        if (is.null(covariate)) {
-          formula <- as.formula(paste0(outcome, " ~ 1 +", predictor))
-        } else {
-          formula <- as.formula(paste0(outcome, " ~ 1 +", paste0(covariate, collapse = "+"), "+", predictor))
-        }
-        
-        mod <- dsBaseClient::ds.glm(formula = formula,
-                                    data = "baseline_tmp",
-                                    family = "gaussian",
-                                    maxit = 20,
-                                    CI = 0.95,
-                                    viewIter = FALSE,
-                                    viewVarCov = FALSE,
-                                    viewCor = FALSE,
-                                    datasources = opals)
-        
-        # num factor levels
-        # (only works for two-level factors?)
-        num_levels <- length(tmp[[1]][[3]])
-        last_level <- tmp[[1]][[3]][[num_levels]]
-        
-        # get relevant results and put into data frame
-        coefs <- as.data.frame(mod$coefficients)
-        coefs$predictor <- rownames(coefs)
-        coefs <- coefs[coefs$predictor == paste0(predictor, last_level), ]
-        
-        out <- data.frame(outcome = outcome,
-                          predictor = predictor,
-                          valid_n = mod$Nvalid,
-                          intercept = ,
-                          beta = coefs[[1]],
-                          se = ,
-                          p.value = coefs[[4]],
-                          ci.low = coefs[[5]],
-                          ci.high = coefs[[6]])
-        
-      }
-      
-    }
-    
-    if (is.null(covariate)) {
-        out$covariate <- "none"
-    } else {
-        out$covariate <- paste0(covariate, collapse = ".")
-    }
-    
-    if (is.null(subset_procedure)) {
-        out$subset_procedure <- "none"
-    } else {
-        out$subset_procedure <- subset_procedure 
-    }
 
+        stop("No factors allowed as outcome!")     
+
+    }
+    
     out$cohort <- strsplit(opals[[1]]@name, "_")[[1]][[1]]
-
     return(out)
     
 }

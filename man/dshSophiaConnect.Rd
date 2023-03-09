@@ -7,7 +7,6 @@
 dshSophiaConnect(
   username = Sys.getenv("fdb_user"),
   password = Sys.getenv("fdb_password"),
-  error = "exclude",
   include = NULL,
   exclude = NULL,
   append_name = NULL,
@@ -19,11 +18,11 @@ dshSophiaConnect(
 
 \item{password}{A character; your password. Defaults to \code{Sys.getenv("fdb_password")}.}
 
-\item{error}{A character; either \code{exclude} (default) or \code{include} (optional). If \code{exclude}, any nodes with an error will not be connected to. The user will notified if this is the case. If \code{include}, a connection attempt will be made, but is unlikely to succedd.}
-
 \item{include}{A character or vector of characters containing only the nodes you want to connect to.}
 
 \item{exclude}{A character or vector of characters containing only the nodes you do not want to connect to.}
+
+\item{error}{A character; either \code{exclude} (default) or \code{include} (optional). If \code{exclude}, any nodes with an error will not be connected to. The user will notified if this is the case. If \code{include}, a connection attempt will be made, but is unlikely to succedd.}
 }
 \value{
 An Opals object (\code{opals}) is assigned to the Global environment.

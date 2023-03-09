@@ -76,7 +76,7 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, unit 
    
     curr_concept_id <- dsBaseClient::ds.summary("mw")[[1]][[4]][2]
     num_timepoints <- dsBaseClient::ds.summary(paste0("mw$", curr_concept_id))[[1]][[3]][[7]]
-    
+
     # first time point
     # pivot and take first measurement
     dsSwissKnifeClient::dssPivot("m_t1",

@@ -7,9 +7,11 @@
 dshSophiaMeasureDesc(
   variable,
   keep_procedure = NA,
-  keep_observation = NA,
   remove_procedure = NA,
-  remove_observation = NA
+  keep_observation = NA,
+  remove_observation = NA,
+  keep_gender = NA,
+  remove_gender = NA
 )
 }
 \value{

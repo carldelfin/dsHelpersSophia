@@ -21,15 +21,11 @@ dshSophiaMeasureDesc <- function(variable,
                                  keep_observation = NA, remove_observation = NA, 
                                  keep_gender = NA, remove_gender = NA) {
 
-    # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
-    # the user probably did not run dshSophiaConnect() yet. Here the user may do so, after 
-    # being prompted for username and password.
     if (exists("opals") == FALSE || exists("nodes_and_cohorts") == FALSE) {
         cat("")
         cat("No 'opals' and/or 'nodes_and_cohorts' object found\n")
         cat("You probably did not run 'dshSophiaConnect' yet, do you wish to do that now?\n")
         switch(menu(c("Yes", "No (abort)")) + 1,
-               cat("Test"), 
                dshSophiaPrompt(),
                stop("Aborting..."))
     }
