@@ -154,10 +154,8 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                                     join.type = "full",
                                     datasources = opals)
 
-        dsSwissKnifeClient::dssDeriveColumn("baseline_tmp",
-                                            predictor,
-                                            paste0("scale(", predictor, ")"),
-                                            datasources = opals)
+        invisible(dsBaseClient::ds.rm(c("baseline_pred", "baseline_outcome")))
+
     }
 
     # need to create numeric gender if used as covariate
