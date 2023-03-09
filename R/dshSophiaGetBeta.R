@@ -196,47 +196,47 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
 
     } else {
 
-      # numeric/integer outcome
-      if (tmp[[1]][[1]] == "numeric" | tmp[[1]][[1]] == "integer") {
-        
-        # if outcome is NA, Inf, have mean == 0, or
-        # length (valid N) < 5
-        # return empty
-        if (is.na(tmp[[1]][[3]][[8]]) | tmp[[1]][[3]][[8]] == 0 | tmp[[1]][[3]][[8]] == Inf | tmp[[1]][[2]] < 5) {
-          
-          # return empty 
-          out <- data.frame(outcome = outcome,
-                            predictor = pred,
-                            covariate = paste0(covariate, collapse = "."),
-                            valid.n = "< 5",
-                            intercept.beta = NA,
-                            intercept.se = NA,
-                            intercept.p.val = NA,
-                            intercept.ci.low = NA,
-                            intercept.ci.high = NA,
-                            predictor.beta = NA,
-                            predictor.se = NA,
-                            predictor.p.val = NA,
-                            predictor.ci.low = NA,
-                            predictor.ci.high = NA,
-                            keep_procedure = keep_procedure,
-                            remove_procedure = remove_procedure,
-                            keep_observation = keep_observation,
-                            remove_observation = remove_observation,
-                            standardize_all = standardize_all,
-                            standardize_pred = standardize_pred)
+        # numeric/integer outcome
+        if (tmp[[1]][[1]] == "numeric" | tmp[[1]][[1]] == "integer") {
 
-        } else {
+            # if outcome is NA, Inf, have mean == 0, or
+            # length (valid N) < 5
+            # return empty
+            if (is.na(tmp[[1]][[3]][[8]]) | tmp[[1]][[3]][[8]] == 0 | tmp[[1]][[3]][[8]] == Inf | tmp[[1]][[2]] < 5) {
 
-            tryCatch(expr = { 
+                # return empty 
+                out <- data.frame(outcome = outcome,
+                                  predictor = pred,
+                                  covariate = paste0(covariate, collapse = "."),
+                                  valid.n = "< 5",
+                                  intercept.beta = NA,
+                                  intercept.se = NA,
+                                  intercept.p.val = NA,
+                                  intercept.ci.low = NA,
+                                  intercept.ci.high = NA,
+                                  predictor.beta = NA,
+                                  predictor.se = NA,
+                                  predictor.p.val = NA,
+                                  predictor.ci.low = NA,
+                                  predictor.ci.high = NA,
+                                  keep_procedure = keep_procedure,
+                                  remove_procedure = remove_procedure,
+                                  keep_observation = keep_observation,
+                                  remove_observation = remove_observation,
+                                  standardize_all = standardize_all,
+                                  standardize_pred = standardize_pred)
 
-                         mod <- dsSwissKnifeClient::dssLM(what = "baseline_tmp",
-                                                          type = "split",
-                                                          dep_var = outcome,
-                                                          expl_vars = c(pred, covariate),
-                                                          datasources = opals) %>% 
-                         as.data.frame() %>% 
-                         tibble::rownames_to_column("predictor") 
+            } else {
+
+                tryCatch(expr = { 
+
+                             mod <- dsSwissKnifeClient::dssLM(what = "baseline_tmp",
+                                                              type = "split",
+                                                              dep_var = outcome,
+                                                              expl_vars = c(pred, covariate),
+                                                              datasources = opals) %>% 
+                             as.data.frame() %>% 
+                             tibble::rownames_to_column("predictor") 
 
                          colnames(mod) <- gsub(paste0(names(opals), "."), "", colnames(mod))
                          res_intercept <- mod[1, ]
@@ -264,7 +264,7 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                                            standardize_all = standardize_all,
                                            standardize_pred = standardize_pred)
 
-                        },
+                                  },
 
                          error = function(e) {
 
@@ -272,18 +272,16 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                              print(e)
                              print(datashield.errors())
 
-                        }
-            )
+                         })
+            }
+        } else {
+
+            stop("No factors allowed as outcome!")     
+
         }
-
-      # factor outcome
-      } else {
-
-        stop("No factors allowed as outcome!")     
 
     }
     
     out$cohort <- strsplit(opals[[1]]@name, "_")[[1]][[1]]
     return(out)
-    
 }

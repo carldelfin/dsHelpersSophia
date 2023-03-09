@@ -6,10 +6,14 @@
 \usage{
 dshSophiaGetBeta(
   outcome,
-  predictor,
-  covariate = NULL,
-  subset_procedure = NULL,
-  standardized = TRUE
+  pred,
+  covariate = NA,
+  keep_procedure = NA,
+  remove_procedure = NA,
+  keep_observation = NA,
+  remove_observation = NA,
+  standardize_all = FALSE,
+  standardize_pred = TRUE
 )
 }
 \value{
