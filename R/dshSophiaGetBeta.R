@@ -262,8 +262,8 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                          res_intercept$predictor <- "intercept"
                          res_predictor <- mod %>% filter(predictor == pred)
 
-                         print(mod)
-                         print(covariate_names)
+                         print(res_intercept)
+                         print(res_predictor)
 
                          out <- data.frame(outcome = outcome,
                                            outcome.unit = outcome_unit,
