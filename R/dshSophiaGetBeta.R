@@ -254,7 +254,7 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                              mod <- dsSwissKnifeClient::dssLM(what = "baseline_tmp",
                                                               type = "split",
                                                               dep_var = outcome,
-                                                              expl_vars = c(pred, covariate),
+                                                              expl_vars = expl_vars,
                                                               datasources = opals) %>% 
                              as.data.frame() %>% 
                              tibble::rownames_to_column("predictor") 
