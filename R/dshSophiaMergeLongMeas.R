@@ -64,25 +64,7 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, unit 
     dsSwissKnifeClient::dssSubset("m",
                                   "m",
                                   "order(person_id, measurement_date)")
-    
-    # remove outliers?
-    if (!is.na(filter_sd)) {
-
-        tmp_sd <- sqrt(dsBaseClient::ds.var("m$value_as_number")[[1]][[1]])
-        tmp_mean <- dsBaseClient::ds.summary("m$value_as_number")[[1]][[3]][[8]]
-
-        lower_limit <- tmp_mean - (tmp_sd * filter_sd)
-        upper_limit <- tmp_mean + (tmp_sd * filter_sd)
-        
-        sd_fil <- paste0("m$value_as_number < ", upper_limit, " & ", "m$value_as_number > ", lower_limit)
-        
-        dsSwissKnifeClient::dssSubset("m",
-                                      "m",
-                                      row.filter = sd_fil,
-                                      datasources = opals)
-
-    }
-    
+   
     # check how many time points we have
     dsSwissKnifeClient::dssPivot(symbol = "mw",
                                  what = "m",
@@ -119,7 +101,26 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, unit 
                                   "m_t1",
                                   col.filter = paste0("c('person_id', '", name3, "')"),
                                   datasources = opals)
+   
+    # remove outliers?
+    if (!is.na(filter_sd)) {
+
+        tmp_sd <- sqrt(dsBaseClient::ds.var(paste0("m_t1$", name3))[[1]][[1]])
+        tmp_mean <- dsBaseClient::ds.summary(paste0("m_t1$", name3))[[1]][[3]][[8]]
+
+        lower_limit <- tmp_mean - (tmp_sd * filter_sd)
+        upper_limit <- tmp_mean + (tmp_sd * filter_sd)
+        
+        sd_fil <- paste0("m_t1$", name3, " < ", upper_limit, " & ", "m_t1$", name3, " > ", lower_limit)
+        
+        dsSwissKnifeClient::dssSubset("m_t1",
+                                      "m_t1",
+                                      row.filter = sd_fil,
+                                      datasources = opals)
+
+    }
     
+     
     if (num_timepoints > 1) {
 
         # loop through time points
@@ -188,6 +189,25 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, unit 
                                           paste0("m_t", i),
                                           col.filter = paste0("c('person_id', '", name3, "')"),
                                           datasources = opals)
+             
+            # remove outliers?
+            if (!is.na(filter_sd)) {
+                
+                tmp_sd <- sqrt(dsBaseClient::ds.var(paste0("m_t", i, "$", name3))[[1]][[1]])
+                tmp_mean <- dsBaseClient::ds.summary(paste0("m_t", i, "$", name3))[[1]][[3]][[8]]
+                
+                lower_limit <- tmp_mean - (tmp_sd * filter_sd)
+                upper_limit <- tmp_mean + (tmp_sd * filter_sd)
+                
+                sd_fil <- paste0("m_t", i, "$", name3, " < ", upper_limit, " & ", "m_t", i, "$", name3, " > ", lower_limit)
+                
+                dsSwissKnifeClient::dssSubset(paste0("m_t", i),
+                                              paste0("m_t", i),
+                                              row.filter = sd_fil,
+                                              datasources = opals)
+                
+            }
+            
             
             # merge with m_t1
             dsSwissKnifeClient::dssJoin(c(paste0("m_t", i), "m_t1"),
