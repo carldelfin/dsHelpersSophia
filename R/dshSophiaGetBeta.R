@@ -257,36 +257,22 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                              as.data.frame() %>% 
                              tibble::rownames_to_column("predictor") 
 
-                         colnames(mod) <- gsub(paste0(names(opals), "."), "", colnames(mod))
-                         res_intercept <- mod[1, ]
-                         res_intercept$predictor <- "intercept"
-                         res_predictor <- mod %>% filter(predictor == pred)
-
-                         cat("\n\n")
-                         print(final_preds)
-                         cat("\n\n")
-                         print(mod)
-                         cat("\n\n")
-                         print(res_intercept)
-                         cat("\n\n")
-                         print(res_predictor)
-
                          out <- data.frame(outcome = outcome,
                                            outcome.unit = outcome_unit,
                                            predictor = pred,
                                            predictor.unit = pred_unit,
                                            covariate = covariate_names,
                                            valid.n = tmp[[1]][[2]],
-                                           intercept.beta = res_intercept$beta,
-                                           intercept.se = res_intercept$SE,
-                                           intercept.p.val = res_intercept$p.val,
-                                           intercept.ci.low = res_intercept$CILow,
-                                           intercept.ci.high = res_intercept$CIHigh,
-                                           predictor.beta = res_predictor$beta,
-                                           predictor.se = res_predictor$SE,
-                                           predictor.p.val = res_predictor$p.val,
-                                           predictor.ci.low = res_predictor$CILow,
-                                           predictor.ci.high = res_predictor$CIHigh,
+                                           intercept.beta = mod[1, ]$beta,
+                                           intercept.se = mod[1, ]$SE,
+                                           intercept.p.val = mod[1, ]$p.val,
+                                           intercept.ci.low = mod[1, ]$CILow,
+                                           intercept.ci.high = mod[1, ]$CIHigh,
+                                           predictor.beta = mod[2, ]$beta,
+                                           predictor.se = mod[2, ]$SE,
+                                           predictor.p.val = mod[2, ]$p.val,
+                                           predictor.ci.low = mod[2, ]$CILow,
+                                           predictor.ci.high = mod[2, ]$CIHigh,
                                            keep_procedure = keep_procedure,
                                            remove_procedure = remove_procedure,
                                            keep_observation = keep_observation,
