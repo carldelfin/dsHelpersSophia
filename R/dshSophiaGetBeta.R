@@ -247,8 +247,10 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                             
                             if (!any(is.na(covariate))) {
                                 expl_vars <- c(pred, covariate)
+                                covariate_names <- paste0(covariate, collapse = ".")
                             } else {
                                 expl_vars <- pred
+                                covariate_names <- NA
                             }
 
                              mod <- dsSwissKnifeClient::dssLM(what = "baseline_tmp",
@@ -268,7 +270,7 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                                            outcome.unit = outcome_unit,
                                            predictor = pred,
                                            predictor.unit = pred_unit,
-                                           covariate = paste0(covariate, collapse = "."),
+                                           covariate = covariate_names,
                                            valid.n = tmp[[1]][[2]],
                                            intercept.beta = res_intercept$beta,
                                            intercept.se = res_intercept$SE,
