@@ -170,11 +170,13 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
     }
 
     # need to create numeric gender if used as covariate
-    if ("gender" %in% covariate) {
-        dsSwissKnifeClient::dssDeriveColumn("baseline_tmp",
-                                            "gender",
-                                            "as.numeric(gender) - 1",
-                                            datasources = opals)
+    if (!any(is.na(covariate))) {
+        if ("gender" %in% covariate) {
+            dsSwissKnifeClient::dssDeriveColumn("baseline_tmp",
+                                                "gender",
+                                                "as.numeric(gender) - 1",
+                                                datasources = opals)
+        }
     }
 
     # get a temporary summary
@@ -242,6 +244,12 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
             } else {
 
                 tryCatch(expr = { 
+                            
+                            if (!any(is.na(covariate))) {
+                                expl_vars <- c(pred, covariate)
+                            } else {
+                                expl_vars <- pred
+                            }
 
                              mod <- dsSwissKnifeClient::dssLM(what = "baseline_tmp",
                                                               type = "split",
