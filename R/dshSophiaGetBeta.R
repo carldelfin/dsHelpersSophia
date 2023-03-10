@@ -263,7 +263,7 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                          res_predictor <- mod %>% filter(predictor == pred)
 
                          cat("\n\n")
-                         print(expl_vars)
+                         print(final_preds)
                          cat("\n\n")
                          print(mod)
                          cat("\n\n")
