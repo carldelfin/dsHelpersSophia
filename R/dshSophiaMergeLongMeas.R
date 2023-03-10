@@ -22,7 +22,7 @@
 #' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dsSwissKnifeClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, unit = TRUE) {
+dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, unit = TRUE, filter_sd = NA) {
 
     # ----------------------------------------------------------------------------------------------
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
@@ -65,6 +65,24 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, unit 
                                   "m",
                                   "order(person_id, measurement_date)")
     
+    # remove outliers?
+    if (!is.na(filter_sd)) {
+
+        tmp_sd <- sqrt(dsBaseClient::ds.var("m$value_as_number")[[1]][[1]])
+        tmp_mean <- dsBaseClient::ds.summary("m$value_as_number")[[1]][[3]][[8]]
+
+        lower_limit <- tmp_mean - (tmp_sd * filter_sd)
+        upper_limit <- tmp_mean + (tmp_sd * filter_sd)
+        
+        sd_fil <- paste0("m$value_as_number < ", upper_limit, " & ", "m$value_as_number > ", lower_limit)
+        
+        dsSwissKnifeClient::dssSubset("m",
+                                      "m",
+                                      row.filter = sd_fil,
+                                      datasources = opals)
+
+    }
+    
     # check how many time points we have
     dsSwissKnifeClient::dssPivot(symbol = "mw",
                                  what = "m",
@@ -101,6 +119,7 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, unit 
                                   "m_t1",
                                   col.filter = paste0("c('person_id', '", name3, "')"),
                                   datasources = opals)
+    
 
     if (num_timepoints > 1) {
 
@@ -215,6 +234,7 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, unit 
         }
             
     }
+
         
     # merge with 'baseline'
     dsSwissKnifeClient::dssJoin(c("m_t1", "baseline"),
