@@ -68,11 +68,11 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
     # covariate(s)?
     if (!any(is.na(covariate))) {
         cov_fil <- paste0(", '", paste0(covariate, collapse = "', '"), "'")
-        expl_vars <- c(pred, covariate)
+        final_preds <- c(pred, covariate)
         covariate_names <- paste0(covariate, collapse = ".")
     } else {
         cov_fil <- NULL
-        expl_vars <- pred
+        final_preds <- pred
         covariate_names <- "none" 
     }
                             
@@ -252,7 +252,7 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                              mod <- dsSwissKnifeClient::dssLM(what = "baseline_tmp",
                                                               type = "split",
                                                               dep_var = outcome,
-                                                              expl_vars = expl_vars,
+                                                              expl_vars = final_preds,
                                                               datasources = opals) %>% 
                              as.data.frame() %>% 
                              tibble::rownames_to_column("predictor") 
@@ -262,7 +262,13 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                          res_intercept$predictor <- "intercept"
                          res_predictor <- mod %>% filter(predictor == pred)
 
+                         cat("\n\n")
+                         print(expl_vars)
+                         cat("\n\n")
+                         print(mod)
+                         cat("\n\n")
                          print(res_intercept)
+                         cat("\n\n")
                          print(res_predictor)
 
                          out <- data.frame(outcome = outcome,
