@@ -120,7 +120,6 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, unit 
                                   col.filter = paste0("c('person_id', '", name3, "')"),
                                   datasources = opals)
     
-
     if (num_timepoints > 1) {
 
         # loop through time points
@@ -234,11 +233,10 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, unit 
         }
             
     }
-
         
     # merge with 'baseline'
     dsSwissKnifeClient::dssJoin(c("m_t1", "baseline"),
-                                symbol = "baseline",
+                                symbol = "baseline2",
                                 by = "person_id",
                                 join.type = "full",
                                 datasources = opals)
