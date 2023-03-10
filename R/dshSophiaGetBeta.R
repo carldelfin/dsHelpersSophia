@@ -68,10 +68,14 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
     # covariate(s)?
     if (!any(is.na(covariate))) {
         cov_fil <- paste0(", '", paste0(covariate, collapse = "', '"), "'")
+        expl_vars <- c(pred, covariate)
+        covariate_names <- paste0(covariate, collapse = ".")
     } else {
         cov_fil <- NULL
+        expl_vars <- pred
+        covariate_names <- "none" 
     }
-
+                            
     pred_unit <- paste0("unit_", strsplit(as.character(pred), "_")[[1]][[2]])
     outcome_unit <- paste0("unit_", strsplit(as.character(outcome), "_")[[1]][[2]])
     
@@ -188,7 +192,7 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                           outcome.unit = outcome_unit,
                           predictor = pred,
                           predictor.unit = pred_unit,
-                          covariate = paste0(covariate, collapse = "."),
+                          covariate = covariate_names,
                           valid.n = NA,
                           intercept.beta = NA,
                           intercept.se = NA,
@@ -222,7 +226,7 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                                   outcome.unit = outcome_unit,
                                   predictor = pred,
                                   predictor.unit = pred_unit,
-                                  covariate = paste0(covariate, collapse = "."),
+                                  covariate = covariate_names,
                                   valid.n = "< 5",
                                   intercept.beta = NA,
                                   intercept.se = NA,
@@ -245,14 +249,6 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
 
                 tryCatch(expr = { 
                             
-                            if (!any(is.na(covariate))) {
-                                expl_vars <- c(pred, covariate)
-                                covariate_names <- paste0(covariate, collapse = ".")
-                            } else {
-                                expl_vars <- pred
-                                covariate_names <- NA
-                            }
-
                              mod <- dsSwissKnifeClient::dssLM(what = "baseline_tmp",
                                                               type = "split",
                                                               dep_var = outcome,
@@ -265,6 +261,9 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                          res_intercept <- mod[1, ]
                          res_intercept$predictor <- "intercept"
                          res_predictor <- mod %>% filter(predictor == pred)
+
+                         print(mod)
+                         print(covariate_names)
 
                          out <- data.frame(outcome = outcome,
                                            outcome.unit = outcome_unit,
@@ -293,8 +292,9 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
 
                          error = function(e) {
 
-                             message("Caught an error!")
+                             message("Caught an error!\n\n")
                              print(e)
+                             cat("\n\n")
                              print(datashield.errors())
 
                          })
