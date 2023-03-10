@@ -256,13 +256,6 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                                                               datasources = opals) %>% 
                              as.data.frame() 
 
-                         cat("\n\n")
-                         print(mod)
-                         cat("\n\n")
-                         print(mod[1, ])
-                         cat("\n\n")
-                         print(mod[2, ])
-
                          out <- data.frame(outcome = outcome,
                                            outcome.unit = outcome_unit,
                                            predictor = pred,
