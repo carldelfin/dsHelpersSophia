@@ -136,7 +136,7 @@ dshSophiaMeasureDesc <- function(variable,
                                              datasources = opals))
 
     concept_id <- stringr::str_split(variable, "_", n = 3)[[1]][[2]]
-    concept_unit <- ds.levels(paste0("baseline_tmp$", unit_var))
+    concept_unit <- dsBaseClient::ds.levels(paste0("baseline_tmp$", unit_var))
     concept_unit <- gsub("unit.", "", concept_unit[[1]][[1]])
 
     tmp_summary <- dsBaseClient::ds.summary(paste0("baseline_tmp$", variable))[[1]]
@@ -181,15 +181,6 @@ dshSophiaMeasureDesc <- function(variable,
         tmp_range <- dsSwissKnifeClient::dssRange(paste0("baseline_tmp$", variable))
         time <- stringr::str_split(variable, "_", n = 3)[[1]][[1]]
  
-        # if (time != "t1") {
-        #     tmp_days <- dsBaseClient::ds.summary(paste0("baseline$", variable, "_days_since_t1"))[[1]]
-        #     mean_days_since_t1 <- tmp_days[[3]][[8]]
-        #     median_days_since_t1 <- tmp_days[[3]][[4]]
-        # } else {
-        #     mean_days_since_t1 <- NA 
-        #     median_days_since_t1 <- NA 
-        # }
-
         if (length(stringr::str_split(variable, "_", n = 3)[[1]]) == 2) {
             type <- "raw_score"
         } else {
