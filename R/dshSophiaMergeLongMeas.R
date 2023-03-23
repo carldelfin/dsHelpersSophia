@@ -266,7 +266,7 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, unit 
                                             join.type = "full",
                                             datasources = opals)
              
-                dsBaseClient::ds.rm("tdiff")
+                invisible(dsBaseClient::ds.rm("tdiff"))
                 
             }
             
@@ -308,10 +308,9 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, unit 
                                                         datasources = opals)
 
                 }
+
             }
 
-            invisible(dsBaseClient::ds.rm(paste0("m_t", i)))
-            
         }
         
     }
