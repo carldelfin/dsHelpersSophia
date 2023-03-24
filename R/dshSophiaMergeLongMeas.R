@@ -22,7 +22,7 @@
 #' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dsSwissKnifeClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, unit = TRUE, outlier_sd = NULL, outlier_iqr = NULL) {
+dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, limit_time = NULL, unit = TRUE, outlier_sd = NULL, outlier_iqr = NULL) {
     
     # ----------------------------------------------------------------------------------------------
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
@@ -141,6 +141,10 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, unit 
     
     if (num_timepoints > 1) {
         
+        if (!is.null(limit_time)) {
+            num_timepoints <- limit_time
+        }
+
         # loop through time points
         for (i in 2:num_timepoints) {
             
