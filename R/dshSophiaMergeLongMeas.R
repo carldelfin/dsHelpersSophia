@@ -286,6 +286,8 @@ dshSophiaMergeLongMeas <- function(concept_id, change = TRUE, limit_time = NULL,
         invisible(dsBaseClient::ds.rm("mu"))
 
     }
+        
+    invisible(dsBaseClient::ds.rm("m"))
 
         #     # time difference requested?
         #     if (days == TRUE) {
