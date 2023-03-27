@@ -22,7 +22,7 @@
 #' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dsSwissKnifeClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, limit_time = NULL, unit = TRUE, outlier_sd = NULL, outlier_iqr = NULL) {
+dshSophiaMergeLongMeas <- function(concept_id, change = TRUE, limit_time = NULL, unit = TRUE, outlier_sd = NULL, outlier_iqr = NULL) {
     
     # ----------------------------------------------------------------------------------------------
     # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
@@ -139,62 +139,31 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, limit
 
     }
     
+    # merge with 'baseline'
+    dsSwissKnifeClient::dssJoin(c("baseline", "m_t1"),
+                                symbol = "baseline",
+                                by = "person_id",
+                                join.type = "left",
+                                datasources = opals)
+            
+    invisible(dsBaseClient::ds.rm("m_t1"))
+
+    if (!is.null(limit_time)) {
+        num_timepoints <- limit_time
+    }
+
     if (num_timepoints > 1) {
         
-        if (!is.null(limit_time)) {
-            num_timepoints <- limit_time
-        }
-
         # loop through time points
         for (i in 2:num_timepoints) {
             
-            # derive new names based on ith time point
+            # derive new name based on ith time point
             name3 <- paste0("t", i, "_", name2)
-            
-            # time difference requested?
-            if (days == TRUE) {
-                
-                aggr <- paste0("function(x) as.numeric(as.Date(x[", i, "]) - as.Date(x[1]))")
-                
-                dsSwissKnifeClient::dssPivot(symbol = "tdiff",
-                                             what = "m",
-                                             value.var = "measurement_date",
-                                             formula = "person_id ~ measurement_name",
-                                             by.col = "person_id",
-                                             fun.aggregate = eval(parse(text = aggr)),
-                                             datasources = opals)
-                
-                concept_name <- dsBaseClient::ds.summary("tdiff")[[1]][[4]][[2]]
-                
-                # remove missing
-                dsBaseClient::ds.completeCases(x1 = "tdiff",
-                                               newobj = "tdiff",
-                                               datasources = opals)
-                
-                # remove unrealistic values
-                # (8000 is approx. number of days from 2000-01-01 to today)
-                dsSwissKnifeClient::dssSubset("tdiff",
-                                              "tdiff",
-                                              row.filter = paste0("tdiff$", concept_name, " < 8000"),
-                                              datasources = opals)
-                
-                # create new time from t1 column
-                dsSwissKnifeClient::dssDeriveColumn("tdiff",
-                                                    paste0(name3, "_days_since_t1"),
-                                                    concept_name,
-                                                    datasources = opals)
-                
-                # subset
-                dsSwissKnifeClient::dssSubset("tdiff",
-                                              "tdiff",
-                                              col.filter = paste0("c('person_id', '", name3, "_days_since_t1')"),
-                                              datasources = opals)
-            }
-            
+             
             # aggregation function for selecting the ith measurement
             aggr <- paste0("function(x) x[", i, "]")
             
-            dsSwissKnifeClient::dssPivot(paste0("m_t", i),
+            dsSwissKnifeClient::dssPivot("m_tmp",
                                          what = "m",
                                          value.var = "value_as_number",
                                          formula = "person_id ~ measurement_concept_id",
@@ -202,27 +171,27 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, limit
                                          fun.aggregate = aggr,
                                          datasources = opals)
             
-            dsSwissKnifeClient::dssDeriveColumn(paste0("m_t", i),
+            dsSwissKnifeClient::dssDeriveColumn("m_tmp",
                                                 name3,
                                                 name1,
                                                 datasources = opals)
             
-            dsSwissKnifeClient::dssSubset(paste0("m_t", i),
-                                          paste0("m_t", i),
+            dsSwissKnifeClient::dssSubset("m_tmp",
+                                          "m_tmp", 
                                           col.filter = paste0("c('person_id', '", name3, "')"),
                                           datasources = opals)
 
             # outlier removal
             if (!is.null(outlier_sd)) {
 
-                tmp_sd <- sqrt(dsBaseClient::ds.var(paste0("m_t", i, "$", name3))[[1]][[1]])
-                tmp_mean <- dsBaseClient::ds.summary(paste0("m_t", i, "$", name3))[[1]][[3]][[8]]
+                tmp_sd <- sqrt(dsBaseClient::ds.var(paste0("m_tmp$", name3))[[1]][[1]])
+                tmp_mean <- dsBaseClient::ds.summary(paste0("m_tmp$", name3))[[1]][[3]][[8]]
 
                 upper_limit <- tmp_mean + (outlier_sd * tmp_sd)
                 lower_limit <- tmp_mean - (outlier_sd * tmp_sd)
 
-                dsSwissKnifeClient::dssSubset(paste0("m_t", i),
-                                              paste0("m_t", i),
+                dsSwissKnifeClient::dssSubset("m_tmp",
+                                              "m_tmp",
                                               row.filter = paste0(name3, " < ", upper_limit, " & ", name3, " > ", lower_limit),
                                               datasources = opals)
 
@@ -230,7 +199,7 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, limit
 
             if (!is.null(outlier_iqr)) {
 
-                tmp_summary <- dsBaseClient::ds.summary(paste0("m_t", i, "$", name3))[[1]]
+                tmp_summary <- dsBaseClient::ds.summary(paste0("m_tmp$", name3))[[1]]
                 tmp_q1 <- tmp_summary[[3]][[3]]
                 tmp_q3 <- tmp_summary[[3]][[5]]
                 tmp_iqr <- tmp_summary[[3]][[5]] - tmp_summary[[3]][[3]]
@@ -238,46 +207,26 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, limit
                 upper_limit <- tmp_q3 + (outlier_iqr * tmp_iqr)
                 lower_limit <- tmp_q1 - (outlier_iqr * tmp_iqr)
                 
-                dsSwissKnifeClient::dssSubset(paste0("m_t", i),
-                                              paste0("m_t", i),
+                dsSwissKnifeClient::dssSubset("m_tmp",
+                                              "m_tmp",
                                               row.filter = paste0(name3, " < ", upper_limit, " & ", name3, " > ", lower_limit),
                                               datasources = opals)
 
             }
-            
-            # merge with m_t1
-            dsSwissKnifeClient::dssJoin(c(paste0("m_t", i), "m_t1"),
-                                        symbol = "m_t1",
+
+            # merge with 'baseline'
+            dsSwissKnifeClient::dssJoin(c("baseline", "m_tmp"),
+                                        symbol = "baseline",
                                         by = "person_id",
-                                        join.type = "full",
+                                        join.type = "left",
                                         datasources = opals)
-            
-            # merge tdiff with m_t1 if requested 
-            if (days == TRUE) {
 
-                if (!is.null(outlier_sd) | !is.null(outlier_iqr)) {
+            invisible(dsBaseClient::ds.rm("m_tmp"))
 
-                    dsSwissKnifeClient::dssSubset("tdiff",
-                                                  "tdiff",
-                                                  row.filter = paste0("tdiff$person_id %in% m_t", i, "$person_id"),
-                                                  datasources = opals)
-
-                }                
-
-                dsSwissKnifeClient::dssJoin(c("m_t1", "tdiff"),
-                                            symbol = "m_t1",
-                                            by = "person_id",
-                                            join.type = "full",
-                                            datasources = opals)
-             
-                invisible(dsBaseClient::ds.rm("tdiff"))
-                
-            }
-            
             # calculate change?
             if (change == TRUE) {
-                
-                dsSwissKnifeClient::dssDeriveColumn("m_t1",
+               
+                dsSwissKnifeClient::dssDeriveColumn("baseline",
                                                     paste0(name3, "_pct_change_from_t1"),
                                                     paste0("((", 
                                                            name3,
@@ -287,15 +236,14 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, limit
                                                            gsub(paste0("t", i), "t1", name3), 
                                                            ") * 100"),
                                                     datasources = opals)
-                
-                dsSwissKnifeClient::dssDeriveColumn("m_t1",
+               
+                dsSwissKnifeClient::dssDeriveColumn("baseline",
                                                     paste0(name3, "_raw_change_from_t1"), 
                                                     paste0(name3, " - ", gsub(paste0("t", i), "t1", name3)),
                                                     datasources = opals)
-
                 if (i > 2) {
 
-                    dsSwissKnifeClient::dssDeriveColumn("m_t1",
+                    dsSwissKnifeClient::dssDeriveColumn("baseline",
                                                         paste0(name3, "_pct_change_from_t", i - 1),
                                                         paste0("((", 
                                                                name3,
@@ -306,28 +254,18 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, limit
                                                                ") * 100"),
                                                         datasources = opals)
 
-                    dsSwissKnifeClient::dssDeriveColumn("m_t1",
+                    dsSwissKnifeClient::dssDeriveColumn("baseline",
                                                         paste0(name3, "_raw_change_from_t", i - 1), 
                                                         paste0(name3, " - ", gsub(paste0("t", i), paste0("t", i - 1), name3)),
                                                         datasources = opals)
 
                 }
-
             }
-
         }
-        
     }
-    
-    # merge with 'baseline'
-    dsSwissKnifeClient::dssJoin(c("m_t1", "baseline"),
-                                symbol = "baseline",
-                                by = "person_id",
-                                join.type = "full",
-                                datasources = opals)
-    
+
     if (unit == TRUE) {
-        
+
         dsSwissKnifeClient::dssPivot(symbol = "mu",
                                      what = "m",
                                      value.var = "unit",
@@ -335,19 +273,103 @@ dshSophiaMergeLongMeas <- function(concept_id, days = TRUE, change = TRUE, limit
                                      by.col = "person_id",
                                      fun.aggregate = "function(x) x[1]",
                                      datasources = opals)
-        
+
         invisible(dsSwissKnifeClient::dssColNames("mu", 
                                                   value = c("person_id", paste0("unit_", name2))))
-        
+
         dsSwissKnifeClient::dssJoin(c("mu", "baseline"),
                                     symbol = "baseline",
                                     by = "person_id",
                                     join.type = "full",
                                     datasources = opals)
-        
+
         invisible(dsBaseClient::ds.rm("mu"))
-        
+
     }
-    
-    invisible(dsBaseClient::ds.rm(c("m_t1", "m", "mw")))
+
+        #     # time difference requested?
+        #     if (days == TRUE) {
+        #        
+        #         aggr <- paste0("function(x) as.numeric(as.Date(x[", i, "]) - as.Date(x[1]))")
+        #        
+        #         dsSwissKnifeClient::dssPivot(symbol = "tdiff",
+        #                                      what = "m",
+        #                                      value.var = "measurement_date",
+        #                                      formula = "person_id ~ measurement_name",
+        #                                      by.col = "person_id",
+        #                                      fun.aggregate = eval(parse(text = aggr)),
+        #                                      datasources = opals)
+        #        
+        #         concept_name <- dsBaseClient::ds.summary("tdiff")[[1]][[4]][[2]]
+        #        
+        #         # remove missing
+        #         dsBaseClient::ds.completeCases(x1 = "tdiff",
+        #                                        newobj = "tdiff",
+        #                                        datasources = opals)
+        #        
+        #         # remove unrealistic values
+        #         # (8000 is approx. number of days from 2000-01-01 to today)
+        #         dsSwissKnifeClient::dssSubset("tdiff",
+        #                                       "tdiff",
+        #                                       row.filter = paste0("tdiff$", concept_name, " < 8000"),
+        #                                       datasources = opals)
+        #        
+        #         # create new time from t1 column
+        #         dsSwissKnifeClient::dssDeriveColumn("tdiff",
+        #                                             paste0(name3, "_days_since_t1"),
+        #                                             concept_name,
+        #                                             datasources = opals)
+        #        
+        #         # subset
+        #         dsSwissKnifeClient::dssSubset("tdiff",
+        #                                       "tdiff",
+        #                                       col.filter = paste0("c('person_id', '", name3, "_days_since_t1')"),
+        #                                       datasources = opals)
+        #     }
+        #                # merge tdiff with m_ti if requested 
+        #     if (days == TRUE) {
+        #
+        #         if (!is.null(outlier_sd) | !is.null(outlier_iqr)) {
+        #
+        #             dsSwissKnifeClient::dssSubset("tdiff",
+        #                                           "tdiff",
+        #                                           row.filter = paste0("tdiff$person_id %in% m_t", i, "$person_id"),
+        #                                           datasources = opals)
+        #
+        #         }                
+        #
+        #         dsSwissKnifeClient::dssJoin(c(paste0("m_t", i), "tdiff"),
+        #                                     symbol = paste0("m_t", i),
+        #                                     by = "person_id",
+        #                                     join.type = "full",
+        #                                     datasources = opals)
+        #     
+        #         invisible(dsBaseClient::ds.rm("tdiff"))
+        #        
+        #     }
+        #   
+        #     cat("\n\njoining t", i, "\n\n")
+        #
+        #     # merge to tmp df
+        #     dsSwissKnifeClient::dssJoin(c(paste0("m_t", i), "m_t1"),
+        #                                 symbol = "m_tmp",
+        #                                 by = "person_id",
+        #                                 join.type = "full",
+        #                                 datasources = opals)
+        #    
+        #
+        #     remove_name <- gsub(i, "1", name3)
+        #     dsSwissKnifeClient::dssSubset("m_tmp",
+        #                                   "m_tmp",
+        #                                   col.filter = paste0('!(colnames(m_tmp) == "', remove_name, '"'),
+        #                                   datasources = opals)
+        #
+        #     # merge with 'baseline'
+        #     dsSwissKnifeClient::dssJoin(c("m_tmp", "baseline"),
+        #                                 symbol = "baseline",
+        #                                 by = "person_id",
+        #                                 join.type = "full",
+        #                                 datasources = opals)
+        #
+        # }
 }
