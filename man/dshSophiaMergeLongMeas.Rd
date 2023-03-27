@@ -4,7 +4,14 @@
 \alias{dshSophiaMergeLongMeas}
 \title{Merge a (longitudinal) measurement table variable with the federated 'baseline' data frame}
 \usage{
-dshSophiaMergeLongMeas(concept_id, days = TRUE, change = TRUE, unit = TRUE)
+dshSophiaMergeLongMeas(
+  concept_id,
+  change = TRUE,
+  limit_time = NULL,
+  unit = TRUE,
+  outlier_sd = NULL,
+  outlier_iqr = NULL
+)
 }
 \value{
 Nothing, the federated 'baseline' data frame is appended.
