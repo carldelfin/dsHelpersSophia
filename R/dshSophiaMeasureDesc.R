@@ -44,7 +44,6 @@ dshSophiaMeasureDesc <- function(variable,
         kp_fil <- NULL
     }
 
-
     # remove observation?
     if (!is.na(remove_observation)) {
         ro_fil <- paste0(", 'has_", remove_observation, "'")

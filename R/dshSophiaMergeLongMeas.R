@@ -277,10 +277,11 @@ dshSophiaMergeLongMeas <- function(concept_id, change = TRUE, limit_time = NULL,
         invisible(dsSwissKnifeClient::dssColNames("mu", 
                                                   value = c("person_id", paste0("unit_", name2))))
 
-        dsSwissKnifeClient::dssJoin(c("mu", "baseline"),
+        # merge with 'baseline'
+        dsSwissKnifeClient::dssJoin(c("baseline", "mu"),
                                     symbol = "baseline",
                                     by = "person_id",
-                                    join.type = "full",
+                                    join.type = "left",
                                     datasources = opals)
 
         invisible(dsBaseClient::ds.rm("mu"))
