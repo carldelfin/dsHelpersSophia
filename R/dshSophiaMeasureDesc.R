@@ -72,9 +72,7 @@ dshSophiaMeasureDesc <- function(variable,
         kg_fil <- NULL
     }
 
-    unit_var <- paste0("unit_", strsplit(as.character(variable), "_")[[1]][[2]])
-
-    fil <- paste0("c('", variable, "'", ", '", unit_var, "'", rp_fil, ro_fil, kp_fil, ko_fil, rg_fil, kg_fil, ")")
+    fil <- paste0("c('", variable, "'", rp_fil, ro_fil, kp_fil, ko_fil, rg_fil, kg_fil, ")")
 
     dsSwissKnifeClient::dssSubset("baseline_tmp",
                                   "baseline",
@@ -135,15 +133,12 @@ dshSophiaMeasureDesc <- function(variable,
                                              datasources = opals))
 
     concept_id <- stringr::str_split(variable, "_", n = 3)[[1]][[2]]
-    concept_unit <- dsBaseClient::ds.levels(paste0("baseline_tmp$", unit_var))
-    concept_unit <- gsub("unit.", "", concept_unit[[1]][[1]])
 
     tmp_summary <- dsBaseClient::ds.summary(paste0("baseline_tmp$", variable))[[1]]
 
     if (length(tmp_summary)[[1]] == 1) {
 
         out <- data.frame(concept_id = concept_id,
-                          concept_unit = concept_unit,
                           time = NA,
                           type = NA,
                           n = NA,
@@ -160,7 +155,6 @@ dshSophiaMeasureDesc <- function(variable,
     } else if (tmp_summary[[2]] < 5) {
 
         out <- data.frame(concept_id = concept_id,
-                          concept_unit = concept_unit,
                           time = NA,
                           type = NA,
                           n = NA,
@@ -187,7 +181,6 @@ dshSophiaMeasureDesc <- function(variable,
         }
 
         out <- data.frame(concept_id = concept_id,
-                          concept_unit = concept_unit,
                           time = time,
                           type = type,
                           n = tmp_var[[1]][[3]],
