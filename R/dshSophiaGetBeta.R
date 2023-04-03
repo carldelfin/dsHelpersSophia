@@ -76,13 +76,13 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
         covariate_names <- "none" 
     }
                             
-    pred_unit <- paste0("unit_", strsplit(as.character(pred), "_")[[1]][[2]])
-    outcome_unit <- paste0("unit_", strsplit(as.character(outcome), "_")[[1]][[2]])
+    #pred_unit <- paste0("unit_", strsplit(as.character(pred), "_")[[1]][[2]])
+    #outcome_unit <- paste0("unit_", strsplit(as.character(outcome), "_")[[1]][[2]])
     
     fil <- paste0("c('person_id', ",
                   "'", outcome, "', ", 
-                  "'", pred_unit, "', ", 
-                  "'", outcome_unit, "', ", 
+                  #"'", pred_unit, "', ", 
+                  #"'", outcome_unit, "', ", 
                   "'", pred, "'", 
                   cov_fil, rp_fil, ro_fil, kp_fil, ko_fil, ")")
 
@@ -91,11 +91,11 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                                   col.filter = fil,
                                   datasources = opals)
     
-    pred_unit <- ds.levels(paste0("baseline_tmp$", pred_unit))
-    pred_unit <- gsub("unit.", "", pred_unit[[1]][[1]])
+    #pred_unit <- ds.levels(paste0("baseline_tmp$", pred_unit))
+    #pred_unit <- gsub("unit.", "", pred_unit[[1]][[1]])
     
-    outcome_unit <- ds.levels(paste0("baseline_tmp$", outcome_unit))
-    outcome_unit <- gsub("unit.", "", outcome_unit[[1]][[1]])
+    #outcome_unit <- ds.levels(paste0("baseline_tmp$", outcome_unit))
+    #outcome_unit <- gsub("unit.", "", outcome_unit[[1]][[1]])
  
     # remove procedure?
     if (!is.na(remove_procedure)) {
@@ -189,9 +189,9 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
     if (length(tmp[[1]]) == 1) {
 
         out <- data.frame(outcome = outcome,
-                          outcome.unit = outcome_unit,
+                          #outcome.unit = outcome_unit,
                           predictor = pred,
-                          predictor.unit = pred_unit,
+                          #predictor.unit = pred_unit,
                           covariate = covariate_names,
                           valid.n = NA,
                           intercept.beta = NA,
@@ -223,9 +223,9 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
 
                 # return empty 
                 out <- data.frame(outcome = outcome,
-                                  outcome.unit = outcome_unit,
+                                  #outcome.unit = outcome_unit,
                                   predictor = pred,
-                                  predictor.unit = pred_unit,
+                                  #predictor.unit = pred_unit,
                                   covariate = covariate_names,
                                   valid.n = "< 5",
                                   intercept.beta = NA,
@@ -257,9 +257,9 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                              as.data.frame() 
 
                          out <- data.frame(outcome = outcome,
-                                           outcome.unit = outcome_unit,
+                                           #outcome.unit = outcome_unit,
                                            predictor = pred,
-                                           predictor.unit = pred_unit,
+                                           #predictor.unit = pred_unit,
                                            covariate = covariate_names,
                                            valid.n = tmp[[1]][[2]],
                                            intercept.beta = mod[1, 1],
