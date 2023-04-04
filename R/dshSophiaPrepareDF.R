@@ -30,7 +30,8 @@ dshSophiaPrepareDF <- function(in_df = "baseline",
                                keep_observation = NA, 
                                remove_observation = NA, 
                                standardize_all = TRUE, 
-                               standardize_include = NA) {
+                               standardize_include = NA,
+                               standardize_exclude = NA) {
     
     # check if connected 
     # check if 'baseline' exists
@@ -111,6 +112,13 @@ dshSophiaPrepareDF <- function(in_df = "baseline",
                                              newobj = "tmp_df",
                                              datasources = opals))
 
+    # subset to 'vars' and 'person_id' only
+    keep_fil <- paste0("c('person_id'", var_fil, ")")
+    dsSwissKnifeClient::dssSubset("tmp_df",
+                                  "tmp_df",
+                                  col.filter = keep_fil,
+                                  datasources = opals)
+
     # scale all?
     if (standardize_all == TRUE) {
         
@@ -120,7 +128,7 @@ dshSophiaPrepareDF <- function(in_df = "baseline",
         
     } 
 
-    # scale specific?
+    # scale include?
     if (!is.na(standardize_include)) {
         
         scale_fil <- paste0(", '", paste0(standardize_include, collapse = "', '"), "'")
@@ -157,6 +165,43 @@ dshSophiaPrepareDF <- function(in_df = "baseline",
         
     }
 
+    # scale exclude?
+    if (!is.na(standardize_exclude)) {
+        
+        scale_fil <- paste0(", '", paste0(standardize_exclude, collapse = "', '"), "'")
+        scale_fil <- paste0("c('person_id'", scale_fil, ")")
+        
+        dsSwissKnifeClient::dssSubset("tmp_no_scale",
+                                      "tmp_df",
+                                      col.filter = scale_fil,
+                                      datasources = opals)
+
+        no_scale_vars <- ds.summary("tmp_no_scale")[[1]][[4]]
+        all_vars <- ds.summary("tmp_df")[[1]][[4]]
+        keep_vars <- setdiff(all_vars, no_scale_vars)
+
+        keep_fil <- paste0(", '", paste0(keep_vars, collapse = "', '"), "'")
+        keep_fil <- paste0("c('person_id'", keep_fil, ")")
+        
+        dsSwissKnifeClient::dssSubset("tmp_df",
+                                      "tmp_df",
+                                      col.filter = keep_fil,
+                              datasources = opals)
+         
+        dsSwissKnifeClient::dssScale("tmp_df",
+                                     "tmp_df",
+                                     datasources = opals)
+        
+        dsSwissKnifeClient::dssJoin(c("tmp_df", "tmp_scale"),
+                                    symbol = "tmp_df",
+                                    by = "person_id",
+                                    join.type = "full",
+                                    datasources = opals)
+
+        invisible(dsBaseClient::ds.rm("tmp_no_scale"))
+        
+    }
+
     # need to create numeric gender if used as covariate
     if (!any(is.na(covariate))) {
         if ("gender" %in% vars) {
@@ -167,8 +212,6 @@ dshSophiaPrepareDF <- function(in_df = "baseline",
         }
     }
 
-    # subset to 'vars' only
-    keep_fil <- paste0("c('", paste0(vars, collapse = "', '"), "')")
 
     # save
     DSI::datashield.workspace_save(opals, out_df)
