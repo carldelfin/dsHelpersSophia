@@ -1,6 +1,6 @@
 #' Connect to SOPHIA nodes 
 #'
-#' Allows the user to connect to the SOPHIA federated database, with the option of including and excluding specific nodes (a node in this context is a server that hosts a database). Note that connecting to the federated database is a two-step process: First, the user connects to each individual node in order to retrieve a list of all cohorts that are hosted on that specific node (cohorts in this context refer to a specific dataset associated with a study or research project). Then, the user is disconnected, and then reconnects to each individual cohort.
+#' Allows the user to connect to the SOPHIA federated database, with the option of including and excluding specific nodes (a node in this context is a server that hosts a database). Note that connecting to the federated database is a two-step process: First, the user connects to each individual node in order to retrieve a list of all cohorts that are hosted on that specific node (cohorts in this context refer to a specific dataset associated with a study or research project). Then, the user is disconnected and reconnected to each individual cohort.
 #' @param username A character; your username. Defaults to `Sys.getenv("fdb_user")`.
 #' @param password A character; your password. Defaults to `Sys.getenv("fdb_password")`.
 #' @param include A character or vector of characters containing only the nodes you want to connect to. 
@@ -41,16 +41,15 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
     available_nodes <- subset(available_nodes, error_code == 0)
         
     # let user know which nodes were exluded, if any
-    if (!is.null(error_nodes)) {
+    if (nrow(error_nodes) != 0) {
         cat("\nNOTE! The following node(s) will be exluded due to connection errors:\n")
         cat(error_nodes$node_name, "\n")
     }
     
-    #
+    # user cannot include nodes with errors
     if (!is.null(include)) {
         if (include %in% error_nodes$node_name) {
-            cat("\n")
-            stop("The node you included is not available! Aborting...\n")
+            stop("\nThe node you included is not available! Aborting...\n")
         }
     }
 
@@ -86,7 +85,7 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
 
     # create a dataframe in long format with all cohorts (projects)
     # corresponding to each node; note that this is assigned to the 
-    # Global environment for use by `dshSophiaLoad()`
+    # global environment for use by `dshSophiaLoad()`
     nodes_and_cohorts <- do.call("rbind", projects)[, c(1, 4:5)]
     nodes_and_cohorts$node_name <- gsub("\\..*", "", rownames(nodes_and_cohorts))
     nodes_and_cohorts <<- nodes_and_cohorts
@@ -116,19 +115,18 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
 
     if (is.null(restore)) {
         tryCatch(
-                 expr = { opals <<- DSI::datashield.login(logins = builder$build()) },
-                 error = function(e) { message("\nUnable to log in, please check your credentials!") }
+            expr = { opals <<- DSI::datashield.login(logins = builder$build()) },
+            error = function(e) { message("\nUnable to log in, please check your credentials!") }
         )
     } else {
         tryCatch(
-                 expr = { opals <<- DSI::datashield.login(logins = builder$build(),
-                                                          restore = restore) },
-                 error = function(e) { message("\nUnable to log in, please check your credentials!") }
+            expr = { opals <<- DSI::datashield.login(logins = builder$build(), restore = restore) },
+            error = function(e) { message("\nUnable to log in, please check your credentials!") }
         )
     }
 
     # finally, let the user know which cohorts are accessible
     cat("\n\n")
-    cat("You are now connected to the following", nrow(nodes_and_cohorts), "cohort(s) via the federated database:\n")
+    cat("You are now connected to the following", nrow(nodes_and_cohorts), "cohort(s):\n")
     cat(nodes_and_cohorts$name, "\n\n")
 }
