@@ -7,6 +7,7 @@
 dshSophiaMergeLongMeas(
   concept_id,
   change = TRUE,
+  days = TRUE,
   limit_time = NULL,
   unit = TRUE,
   outlier_sd = NULL,

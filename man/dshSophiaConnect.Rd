@@ -28,7 +28,7 @@ dshSophiaConnect(
 An Opals object (\code{opals}) is assigned to the Global environment.
 }
 \description{
-Allows the user to connect to the SOPHIA federated database, with the option of including and excluding specific nodes (a node in this context is a server that hosts a database). Note that connecting to the federated database is a two-step process: First, the user connects to each individual node in order to retrieve a list of all cohorts that are hosted on that specific node (cohorts in this context refer to a specific dataset associated with a study or research project). Then, the user is disconnected, and then reconnects to each individual cohort.
+Allows the user to connect to the SOPHIA federated database, with the option of including and excluding specific nodes (a node in this context is a server that hosts a database). Note that connecting to the federated database is a two-step process: First, the user connects to each individual node in order to retrieve a list of all cohorts that are hosted on that specific node (cohorts in this context refer to a specific dataset associated with a study or research project). Then, the user is disconnected and reconnected to each individual cohort.
 }
 \examples{
 \dontrun{
