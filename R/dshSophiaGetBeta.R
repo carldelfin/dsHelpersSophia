@@ -76,13 +76,8 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
         covariate_names <- "none" 
     }
                             
-    #pred_unit <- paste0("unit_", strsplit(as.character(pred), "_")[[1]][[2]])
-    #outcome_unit <- paste0("unit_", strsplit(as.character(outcome), "_")[[1]][[2]])
-    
     fil <- paste0("c('person_id', ",
                   "'", outcome, "', ", 
-                  #"'", pred_unit, "', ", 
-                  #"'", outcome_unit, "', ", 
                   "'", pred, "'", 
                   cov_fil, rp_fil, ro_fil, kp_fil, ko_fil, ")")
 
@@ -91,12 +86,6 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                                   col.filter = fil,
                                   datasources = opals)
     
-    #pred_unit <- ds.levels(paste0("baseline_tmp$", pred_unit))
-    #pred_unit <- gsub("unit.", "", pred_unit[[1]][[1]])
-    
-    #outcome_unit <- ds.levels(paste0("baseline_tmp$", outcome_unit))
-    #outcome_unit <- gsub("unit.", "", outcome_unit[[1]][[1]])
- 
     # remove procedure?
     if (!is.na(remove_procedure)) {
         dsSwissKnifeClient::dssSubset("baseline_tmp",
@@ -189,9 +178,7 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
     if (length(tmp[[1]]) == 1) {
 
         out <- data.frame(outcome = outcome,
-                          #outcome.unit = outcome_unit,
                           predictor = pred,
-                          #predictor.unit = pred_unit,
                           covariate = covariate_names,
                           valid.n = NA,
                           intercept.beta = NA,
@@ -216,18 +203,13 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
         # numeric/integer outcome
         if (tmp[[1]][[1]] == "numeric" | tmp[[1]][[1]] == "integer") {
 
-            # if outcome is NA, Inf, have mean == 0, or
-            # length (valid N) < 5
-            # return empty
+            # if outcome is NA, Inf, has mean == 0, or length (valid N) < 5, return empty
             if (is.na(tmp[[1]][[3]][[8]]) | tmp[[1]][[3]][[8]] == 0 | tmp[[1]][[3]][[8]] == Inf | tmp[[1]][[2]] < 5) {
 
-                # return empty 
                 out <- data.frame(outcome = outcome,
-                                  #outcome.unit = outcome_unit,
                                   predictor = pred,
-                                  #predictor.unit = pred_unit,
                                   covariate = covariate_names,
-                                  valid.n = "< 5",
+                                  valid.n = NA,
                                   intercept.beta = NA,
                                   intercept.se = NA,
                                   intercept.p.val = NA,
@@ -248,48 +230,47 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
             } else {
 
                 tryCatch(expr = { 
-                            
-                             mod <- dsSwissKnifeClient::dssLM(what = "baseline_tmp",
-                                                              type = "split",
-                                                              dep_var = outcome,
-                                                              expl_vars = final_preds,
-                                                              datasources = opals) %>% 
-                             as.data.frame() 
-
-                         out <- data.frame(outcome = outcome,
-                                           #outcome.unit = outcome_unit,
-                                           predictor = pred,
-                                           #predictor.unit = pred_unit,
-                                           covariate = covariate_names,
-                                           valid.n = tmp[[1]][[2]],
-                                           intercept.beta = mod[1, 1],
-                                           intercept.se = mod[1, 2],
-                                           intercept.p.val = mod[1, 6],
-                                           intercept.ci.low = mod[1, 3],
-                                           intercept.ci.high = mod[1, 4],
-                                           predictor.beta = mod[2, 1],
-                                           predictor.se = mod[2, 2],
-                                           predictor.p.val = mod[2, 6],
-                                           predictor.ci.low = mod[2, 3],
-                                           predictor.ci.high = mod[2, 4],
-                                           keep_procedure = keep_procedure,
-                                           remove_procedure = remove_procedure,
-                                           keep_observation = keep_observation,
-                                           remove_observation = remove_observation,
-                                           standardize_all = standardize_all,
-                                           standardize_pred = standardize_pred)
-
-                                  },
-
-                         error = function(e) {
-
-                             message("Caught an error!\n\n")
-                             print(e)
-                             cat("\n\n")
-                             print(datashield.errors())
-
-                         })
+                    
+                    mod <- dsSwissKnifeClient::dssLM(what = "baseline_tmp",
+                                                     type = "split",
+                                                     dep_var = outcome,
+                                                     expl_vars = final_preds,
+                                                     datasources = opals) %>% 
+                        as.data.frame() 
+                    
+                    out <- data.frame(outcome = outcome,
+                                      predictor = pred,
+                                      covariate = covariate_names,
+                                      valid.n = tmp[[1]][[2]],
+                                      intercept.beta = mod[1, 1],
+                                      intercept.se = mod[1, 2],
+                                      intercept.p.val = mod[1, 6],
+                                      intercept.ci.low = mod[1, 3],
+                                      intercept.ci.high = mod[1, 4],
+                                      predictor.beta = mod[2, 1],
+                                      predictor.se = mod[2, 2],
+                                      predictor.p.val = mod[2, 6],
+                                      predictor.ci.low = mod[2, 3],
+                                      predictor.ci.high = mod[2, 4],
+                                      keep_procedure = keep_procedure,
+                                      remove_procedure = remove_procedure,
+                                      keep_observation = keep_observation,
+                                      remove_observation = remove_observation,
+                                      standardize_all = standardize_all,
+                                      standardize_pred = standardize_pred)
+                    
+                },
+                    
+                    error = function(e) {
+                        
+                        message("Caught an error!\n\n")
+                        print(e)
+                        cat("\n\n")
+                        print(datashield.errors())
+                        
+                })
             }
+            
         } else {
 
             stop("No factors allowed as outcome!")     
