@@ -328,9 +328,7 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                     
                     error = function(e) {
                         
-                        message("Caught an error!\n\n")
                         print(e)
-                        cat("\n\n")
                         print(datashield.errors())
                         
                     })

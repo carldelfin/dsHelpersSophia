@@ -134,10 +134,11 @@ dshSophiaMeasureDesc <- function(variable,
 
     concept_id <- stringr::str_split(variable, "_", n = 3)[[1]][[2]]
 
-    tmp_summary <- dsBaseClient::ds.summary(paste0("baseline_tmp$", variable))[[1]]
-
-    if (length(tmp_summary)[[1]] == 1) {
-
+    # no need to keep going if summary is empty at this stage
+    tmp_summary <- dsBaseClient::ds.summary("baseline_tmp")
+    
+    if (length(tmp_summary[[1]]) == 1) {
+        
         out <- data.frame(concept_id = concept_id,
                           time = NA,
                           type = NA,
@@ -151,49 +152,71 @@ dshSophiaMeasureDesc <- function(variable,
                           iqr = NA,
                           min = NA,
                           max = NA)
-
-    } else if (tmp_summary[[2]] < 5) {
-
-        out <- data.frame(concept_id = concept_id,
-                          time = NA,
-                          type = NA,
-                          n = NA,
-                          mean = NA,
-                          sd = NA,
-                          se = NA,
-                          median = NA,
-                          q1 = NA,
-                          q3 = NA,
-                          iqr = NA,
-                          min = NA,
-                          max = NA)
-
+        
     } else {
-
-        tmp_var <- dsBaseClient::ds.var(paste0("baseline_tmp$", variable))
-        tmp_range <- dsSwissKnifeClient::dssRange(paste0("baseline_tmp$", variable))
-        time <- stringr::str_split(variable, "_", n = 3)[[1]][[1]]
- 
-        if (length(stringr::str_split(variable, "_", n = 3)[[1]]) == 2) {
-            type <- "raw_score"
+        
+        tmp_summary <- dsBaseClient::ds.summary(paste0("baseline_tmp$", variable))[[1]]
+        
+        if (length(tmp_summary)[[1]] == 1) {
+            
+            out <- data.frame(concept_id = concept_id,
+                              time = NA,
+                              type = NA,
+                              n = NA,
+                              mean = NA,
+                              sd = NA,
+                              se = NA,
+                              median = NA,
+                              q1 = NA,
+                              q3 = NA,
+                              iqr = NA,
+                              min = NA,
+                              max = NA)
+            
+        } else if (tmp_summary[[2]] < 10) {
+            
+            out <- data.frame(concept_id = concept_id,
+                              time = NA,
+                              type = NA,
+                              n = NA,
+                              mean = NA,
+                              sd = NA,
+                              se = NA,
+                              median = NA,
+                              q1 = NA,
+                              q3 = NA,
+                              iqr = NA,
+                              min = NA,
+                              max = NA)
+            
         } else {
-            type <- stringr::str_split(variable, "_", n = 3)[[1]][[3]]
+            
+            tmp_var <- dsBaseClient::ds.var(paste0("baseline_tmp$", variable))
+            tmp_range <- dsSwissKnifeClient::dssRange(paste0("baseline_tmp$", variable))
+            time <- stringr::str_split(variable, "_", n = 3)[[1]][[1]]
+            
+            if (length(stringr::str_split(variable, "_", n = 3)[[1]]) == 2) {
+                type <- "raw_score"
+            } else {
+                type <- stringr::str_split(variable, "_", n = 3)[[1]][[3]]
+            }
+            
+            out <- data.frame(concept_id = concept_id,
+                              time = time,
+                              type = type,
+                              n = tmp_var[[1]][[3]],
+                              mean = tmp_summary[[3]][[8]],
+                              sd = sqrt(tmp_var[[1]][[1]]),
+                              se = sqrt(tmp_var[[1]][[1]]) / sqrt(tmp_var[[1]][[4]]),
+                              median = tmp_summary[[3]][[4]],
+                              q1 = tmp_summary[[3]][[3]],
+                              q3 = tmp_summary[[3]][[5]],
+                              iqr = tmp_summary[[3]][[5]] - tmp_summary[[3]][[3]],
+                              min = tmp_range[[1]][[1]][[1]],
+                              max = tmp_range[[1]][[1]][[2]])
+            
         }
-
-        out <- data.frame(concept_id = concept_id,
-                          time = time,
-                          type = type,
-                          n = tmp_var[[1]][[3]],
-                          mean = tmp_summary[[3]][[8]],
-                          sd = sqrt(tmp_var[[1]][[1]]),
-                          se = sqrt(tmp_var[[1]][[1]]) / sqrt(tmp_var[[1]][[4]]),
-                          median = tmp_summary[[3]][[4]],
-                          q1 = tmp_summary[[3]][[3]],
-                          q3 = tmp_summary[[3]][[5]],
-                          iqr = tmp_summary[[3]][[5]] - tmp_summary[[3]][[3]],
-                          min = tmp_range[[1]][[1]][[1]],
-                          max = tmp_range[[1]][[1]][[2]])
-
+        
     }
 
     # remove observation
