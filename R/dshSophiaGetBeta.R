@@ -27,6 +27,8 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                              keep_observation = NA, remove_observation = NA, 
                              standardize_all = FALSE, standardize_pred = TRUE) {
     
+    cat("\nRunning GLM for:", pred, "\n")
+    
     if (exists("opals") == FALSE || exists("nodes_and_cohorts") == FALSE) {
         cat("")
         cat("No 'opals' and/or 'nodes_and_cohorts' object found\n")
@@ -199,9 +201,6 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                                                     datasources = opals)
             }
         }
-        
-        # get temporary summaries
-        tmp_summary <- dsBaseClient::ds.summary("baseline_tmp")
         
         tmp <- dsBaseClient::ds.summary(paste0("baseline_tmp$", pred))
         
