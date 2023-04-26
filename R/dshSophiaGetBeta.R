@@ -129,8 +129,32 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
     # no need to keep going if nrow < 10 at this stage
     tmp_summary <- dsBaseClient::ds.summary("baseline_tmp")
     
-    if (tmp_summary[[1]][[2]] < 10) {
+    if (tmp_summary[[1]] == "INVALID object!") {
         
+        out <- data.frame(outcome = outcome,
+                          predictor = pred,
+                          covariate = covariate_names,
+                          valid.n = NA,
+                          intercept.beta = NA,
+                          intercept.se = NA,
+                          intercept.p.val = NA,
+                          intercept.ci.low = NA,
+                          intercept.ci.high = NA,
+                          predictor.beta = NA,
+                          predictor.se = NA,
+                          predictor.p.val = NA,
+                          predictor.ci.low = NA,
+                          predictor.ci.high = NA,
+                          keep_procedure = keep_procedure,
+                          remove_procedure = remove_procedure,
+                          keep_observation = keep_observation,
+                          remove_observation = remove_observation,
+                          standardize_all = standardize_all,
+                          standardize_pred = standardize_pred)
+        
+
+    } else if (tmp_summary[[1]][[2]] < 10) {
+         
         out <- data.frame(outcome = outcome,
                           predictor = pred,
                           covariate = covariate_names,
