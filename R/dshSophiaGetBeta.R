@@ -25,7 +25,8 @@
 dshSophiaGetBeta <- function(outcome, pred, covariate = NA, 
                              keep_procedure = NA, remove_procedure = NA,
                              keep_observation = NA, remove_observation = NA, 
-                             standardize_all = FALSE, standardize_pred = TRUE) {
+                             standardize_all = FALSE, standardize_pred = TRUE,
+                             reverse_outcome = FALSE) {
     
     #cat("\nRunning GLM for:", pred, "\n")
     
@@ -129,7 +130,7 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
     # no need to keep going if nrow < 10 at this stage
     tmp_summary <- dsBaseClient::ds.summary("baseline_tmp")
     
-    if (tmp_summary[[1]] == "INVALID object!") {
+    if (length(tmp_summary[[1]]) == 1) {
         
         out <- data.frame(outcome = outcome,
                           predictor = pred,
@@ -214,6 +215,14 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
             
             invisible(dsBaseClient::ds.rm(c("baseline_pred", "baseline_outcome")))
             
+        }
+       
+        # reverse outcome?
+        if (reverse_outcome == TRUE) {
+            dsSwissKnifeClient::dssDeriveColumn("baseline_tmp", 
+                                                outcome, 
+                                                paste0(outcome, " * -1"),
+                                                datasources = opals) 
         }
         
         # need to create numeric gender if used as covariate
