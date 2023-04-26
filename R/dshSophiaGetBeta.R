@@ -28,8 +28,6 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                              standardize_all = FALSE, standardize_pred = TRUE,
                              reverse_outcome = FALSE) {
     
-    #cat("\nRunning GLM for:", pred, "\n")
-    
     if (exists("opals") == FALSE || exists("nodes_and_cohorts") == FALSE) {
         cat("")
         cat("No 'opals' and/or 'nodes_and_cohorts' object found\n")
@@ -151,7 +149,8 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                           keep_observation = keep_observation,
                           remove_observation = remove_observation,
                           standardize_all = standardize_all,
-                          standardize_pred = standardize_pred)
+                          standardize_pred = standardize_pred,
+                          reverse_outcome = reverse_outcome)
         
 
     } else if (tmp_summary[[1]][[2]] < 10) {
@@ -175,7 +174,8 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                           keep_observation = keep_observation,
                           remove_observation = remove_observation,
                           standardize_all = standardize_all,
-                          standardize_pred = standardize_pred)
+                          standardize_pred = standardize_pred,
+                          reverse_outcome = reverse_outcome)
         
     } else {
         
@@ -258,7 +258,8 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                               keep_observation = keep_observation,
                               remove_observation = remove_observation,
                               standardize_all = standardize_all,
-                              standardize_pred = standardize_pred)
+                              standardize_pred = standardize_pred,
+                              reverse_outcome = reverse_outcome)
             
         } else {
             
@@ -287,7 +288,8 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                                       keep_observation = keep_observation,
                                       remove_observation = remove_observation,
                                       standardize_all = standardize_all,
-                                      standardize_pred = standardize_pred)
+                                      standardize_pred = standardize_pred,
+                                      reverse_outcome = reverse_outcome)
                     
                 } else {
                     
@@ -319,7 +321,8 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                                           keep_observation = keep_observation,
                                           remove_observation = remove_observation,
                                           standardize_all = standardize_all,
-                                          standardize_pred = standardize_pred)
+                                          standardize_pred = standardize_pred,
+                                          reverse_outcome = reverse_outcome)
                         
                     },
                     
