@@ -27,7 +27,7 @@ dshSophiaGetBeta <- function(outcome, pred, covariate = NA,
                              keep_observation = NA, remove_observation = NA, 
                              standardize_all = FALSE, standardize_pred = TRUE) {
     
-    cat("\nRunning GLM for:", pred, "\n")
+    #cat("\nRunning GLM for:", pred, "\n")
     
     if (exists("opals") == FALSE || exists("nodes_and_cohorts") == FALSE) {
         cat("")
