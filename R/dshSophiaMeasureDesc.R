@@ -29,7 +29,23 @@ dshSophiaMeasureDesc <- function(variable,
                dshSophiaPrompt(),
                stop("Aborting..."))
     }
-
+    
+    # get measurement unit
+    concept_unit <- tryCatch(
+        expr = { 
+            unit_var <- paste0("unit_", strsplit(as.character(variable), "_")[[1]][[2]])
+            concept_unit <- dsBaseClient::ds.levels(paste0("baseline$", unit_var))
+            concept_unit <- gsub("unit.", "", concept_unit[[1]][[1]])
+            concept_unit
+        },
+        error = function(e) { 
+            e 
+        })
+   
+    if (class(concept_unit)[1] == "simpleError") {
+        concept_unit <- NA
+    } 
+    
     # remove procedure?
     if (!is.na(remove_procedure)) {
         rp_fil <- paste0(", 'has_", remove_procedure, "'")
@@ -71,7 +87,7 @@ dshSophiaMeasureDesc <- function(variable,
     } else {
         kg_fil <- NULL
     }
-
+   
     fil <- paste0("c('", variable, "'", rp_fil, ro_fil, kp_fil, ko_fil, rg_fil, kg_fil, ")")
 
     dsSwissKnifeClient::dssSubset("baseline_tmp",
@@ -140,6 +156,7 @@ dshSophiaMeasureDesc <- function(variable,
     if (length(tmp_summary[[1]]) == 1) {
         
         out <- data.frame(concept_id = concept_id,
+                          concept_unit = concept_unit,
                           time = NA,
                           type = NA,
                           n = NA,
@@ -160,6 +177,7 @@ dshSophiaMeasureDesc <- function(variable,
         if (length(tmp_summary)[[1]] == 1) {
             
             out <- data.frame(concept_id = concept_id,
+                              concept_unit = concept_unit,
                               time = NA,
                               type = NA,
                               n = NA,
@@ -176,6 +194,7 @@ dshSophiaMeasureDesc <- function(variable,
         } else if (tmp_summary[[2]] < 10) {
             
             out <- data.frame(concept_id = concept_id,
+                              concept_unit = concept_unit,
                               time = NA,
                               type = NA,
                               n = NA,
@@ -202,6 +221,7 @@ dshSophiaMeasureDesc <- function(variable,
             }
             
             out <- data.frame(concept_id = concept_id,
+                              concept_unit = concept_unit,
                               time = time,
                               type = type,
                               n = tmp_var[[1]][[3]],
