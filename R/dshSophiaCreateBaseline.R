@@ -228,8 +228,7 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
                                           col.filter = "!colnames(baseline) %in% c('f.irst_visit_dat.e', 'year_of_birth', 'birth_datetime')", 
                                           datasources = opals)
             
-            
-            
+            invisible(dsBaseClient::ds.rm("v")) 
             
         } else {
             
