@@ -185,62 +185,110 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
     }
 
     if (!is.null(age_at_first)) {
-           
-        where_clause <- paste0("measurement_concept_id in ('", age_at_first, "')")
-    
-        dsQueryLibrary::dsqLoad(symbol = "ma",
-                                domain = "concept_name",
-                                query_name = "measurement",
-                                where_clause = where_clause,
-                                union = TRUE,
-                                datasources = opals)
-
-        dsSwissKnifeClient::dssSubset("ma",
-                                      "ma",
-                                      "order(person_id, measurement_date)", 
-                                      async = FALSE)
-
-        dsSwissKnifeClient::dssDeriveColumn("ma", 
-                                            "measurement_date_n", 
-                                            "as.numeric(as.Date(measurement_date))")
-
-        dsSwissKnifeClient::dssDeriveColumn("ma",
-                                            "f", 
-                                            "'irst_measurement_dat.e'")
-
-        dsSwissKnifeClient::dssPivot(symbol = "ma", 
-                                     what = "ma", 
-                                     value.var = "measurement_date_n",
-                                     formula = "person_id ~ f",
-                                     by.col = "person_id",
-                                     fun.aggregate = function(x) x[1],
-                                     async = TRUE,
-                                     datasources = opals)
         
-        # remove unrealistic values:
-        # < 0 is before UNIX time, 1970-01-01
-        dsSwissKnifeClient::dssSubset("ma",
-                                      "ma",
-                                      row.filter = paste0("ma$f.irst_measurement_dat.e > 0"),
-                                      datasources = opals)
-        
-        dsSwissKnifeClient::dssJoin(c("ma", "baseline"),
-                                    symbol = "baseline",
-                                    by = "person_id",
-                                    join.type = "full",
-                                    datasources = opals)
-
-        dsSwissKnifeClient::dssDeriveColumn("baseline", 
-                                            paste0("age_at_first_", age_at_first), 
-                                            "round((f.irst_measurement_dat.e - as.numeric(as.Date(year_of_birth, origin = '1970-01-01'))) / 365)")
-        
-        dsSwissKnifeClient::dssSubset("baseline",
-                                      "baseline",
-                                      col.filter = "colnames(baseline) != 'f.irst_measurement_dat.e'",
-                                      datasources = opals)
+        if (age_at_first == "visit") {
             
-        invisible(dsBaseClient::ds.rm("ma"))
-
+            connection_name <- gsub("\\.", "_", DSI::datashield.resources(opals)[[1]])
+            dsResource::dsrAssign("v", "visit_occurrence", connection_name)
+            
+            # make sure it is ordered by ID and measurement date
+            dsSwissKnifeClient::dssSubset("v",
+                                          "v",
+                                          "order(person_id, visit_start_date)")
+            
+            dsSwissKnifeClient::dssDeriveColumn("v", 
+                                                "visit_start_date_n", 
+                                                "as.numeric(as.Date(visit_start_date))")
+            
+            dsSwissKnifeClient::dssDeriveColumn("v",
+                                                "f", 
+                                                "'irst_visit_dat.e'")
+            
+            dsSwissKnifeClient::dssPivot(symbol = "v", 
+                                         what = "v", 
+                                         value.var = "visit_start_date_n",
+                                         formula = "person_id ~ f",
+                                         by.col = "person_id",
+                                         fun.aggregate = function(x) x[1],
+                                         async = TRUE,
+                                         datasources = opals)
+            
+            dsSwissKnifeClient::dssJoin(c("v", "baseline"),
+                                        symbol = "baseline",
+                                        by = "person_id",
+                                        join.type = "full",
+                                        datasources = opals)
+            
+            dsSwissKnifeClient::dssDeriveColumn("baseline", 
+                                                "age_at_first_visit", 
+                                                "round((f.irst_visit_dat.e - as.numeric(as.Date(year_of_birth, origin = '1970-01-01'))) / 365)")
+            
+            dsSwissKnifeClient::dssSubset("baseline",
+                                          "baseline",
+                                          col.filter = "!colnames(baseline) %in% c('f.irst_visit_dat.e', 'year_of_birth', 'birth_datetime')", 
+                                          datasources = opals)
+            
+            
+            
+            
+        } else {
+            
+            where_clause <- paste0("measurement_concept_id in ('", age_at_first, "')")
+            
+            dsQueryLibrary::dsqLoad(symbol = "ma",
+                                    domain = "concept_name",
+                                    query_name = "measurement",
+                                    where_clause = where_clause,
+                                    union = TRUE,
+                                    datasources = opals)
+            
+            dsSwissKnifeClient::dssSubset("ma",
+                                          "ma",
+                                          "order(person_id, measurement_date)", 
+                                          async = FALSE)
+            
+            dsSwissKnifeClient::dssDeriveColumn("ma", 
+                                                "measurement_date_n", 
+                                                "as.numeric(as.Date(measurement_date))")
+            
+            dsSwissKnifeClient::dssDeriveColumn("ma",
+                                                "f", 
+                                                "'irst_measurement_dat.e'")
+            
+            dsSwissKnifeClient::dssPivot(symbol = "ma", 
+                                         what = "ma", 
+                                         value.var = "measurement_date_n",
+                                         formula = "person_id ~ f",
+                                         by.col = "person_id",
+                                         fun.aggregate = function(x) x[1],
+                                         async = TRUE,
+                                         datasources = opals)
+            
+            # remove unrealistic values:
+            # < 0 is before UNIX time, 1970-01-01
+            dsSwissKnifeClient::dssSubset("ma",
+                                          "ma",
+                                          row.filter = paste0("ma$f.irst_measurement_dat.e > 0"),
+                                          datasources = opals)
+            
+            dsSwissKnifeClient::dssJoin(c("ma", "baseline"),
+                                        symbol = "baseline",
+                                        by = "person_id",
+                                        join.type = "full",
+                                        datasources = opals)
+            
+            dsSwissKnifeClient::dssDeriveColumn("baseline", 
+                                                paste0("age_at_first_", age_at_first), 
+                                                "round((f.irst_measurement_dat.e - as.numeric(as.Date(year_of_birth, origin = '1970-01-01'))) / 365)")
+            
+            dsSwissKnifeClient::dssSubset("baseline",
+                                          "baseline",
+                                          col.filter = "colnames(baseline) != 'f.irst_measurement_dat.e'",
+                                          datasources = opals)
+            
+            invisible(dsBaseClient::ds.rm("ma"))
+            
+        }
     }
     
     if (!is.null(age_at_year)) {
