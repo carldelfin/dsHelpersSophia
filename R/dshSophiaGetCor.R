@@ -1,16 +1,16 @@
 #' Get the correlation between two continuous variables
 #'
-#' Given the names of two numeric columns in 'baseline', calculates and returns the Pearson correlation and associated metrics. Several checks are performed to make sure the function does not violate privacy rules. The user has the option to subset data by procedure and observation prior to estimating the correlation. The variables may also be reversed, which is useful when negative values are considered 'good', such as percent weight loss. 
-#' @param x A character, must correspond to the name of a numerical column in 'baseline'.
-#' @param y A character, must correspond to the name of a numerical column in 'baseline'.
+#' Given the names of two numeric columns in a federated data frame, calculates and returns the Pearson correlation and associated metrics. Several checks are performed to make sure the function does not violate privacy rules. The user has the option to subset data by procedure and observation prior to estimating the correlation. The variables may also be reversed, which is useful when negative values are considered 'good', such as percent weight loss. 
+#' @param dataframe A character, the name of the federated data frame holding `x` and `y`. Defaults to `baseline`.
+#' @param x A character, must correspond to a numerical column in the federated data frame.
+#' @param y A character, must correspond to a numerical column in the federated data frame.
 #' @param method A character, specifying the type of correlation. Currently only `pearson` is allowed and is thus default. 
-#' @param dataframe A character, the name of the federated data frame holding x and y. Defaults to `baseline`.
 #' @param keep_procedure A numeric, must be a valid Concept ID for a `has_` column created using `dshSophiaCreateBaseline`. Will only keep rows with this procedure. Defaults to `NA`.
 #' @param remove_procedure A numeric, must be a valid Concept ID for a `has_` column created using `dshSophiaCreateBaseline`. Will remove all rows with this procedure. Defaults to `NA`.
 #' @param keep_observation A numeric, must be a valid Concept ID for a `has_` column created using `dshSophiaCreateBaseline`. Will only keep rows with this observation. Defaults to `NA`.
 #' @param remove_observation A numeric, must be a valid Concept ID for `has_` column created using `dshSophiaCreateBaseline`. Will remove all rows with this observation. Defaults to `NA`.
-#' @param reverse_x A Boolean, set to `TRUE` if x should be reversed. Defaults to `FALSE`.
-#' @param reverse_y A Boolean, set to `TRUE` if y should be reversed. Defaults to `FALSE`.
+#' @param reverse_x A Boolean, setting to `TRUE` will reverse the `x` column. Defaults to `FALSE`.
+#' @param reverse_y A Boolean, setting to `TRUE` will reverse the `y` column. Defaults to `FALSE`.
 #' @return A data frame with the estimated correlation and associated metrics. If privacy checks are not passed, a data frame with NAs will be returned.
 #' @examples
 #' \dontrun{
@@ -21,21 +21,26 @@
 #' dshSophiaLoad()
 #'
 #' # create a 'baseline' data frame on the federated node, 
-#' calculate age at first visit and include 'bypass of stomach' procedure and 'type 2 diabetes' observation
-#' dshSophiaCreateBaseline(age_at_first = "visit", procedure_id = 40483096, observation_id = 201826)
+#' # calculate age at first visit and include 
+#' # 'bypass of stomach' procedure and 'type 2 diabetes' observation
+#' dshSophiaCreateBaseline(age_at_first = "visit",
+#' procedure_id = 40483096,
+#' observation_id = 201826)
 #'    
 #' # add longitudinal weight measures
 #' dshSophiaMergeLongMeas(concept_id = 3038553)
 #' 
-#' # get correlation between age and weight for subgroup with bypass and T2D
-#' dshSophiaGetCor(x = "t1_3038553", y = "age_at_first_visit", keep_procedure = 40483096, keep_observation = 201826)
+#' # get correlation between age and weight
+#' #for subgroup with bypass and T2D
+#' dshSophiaGetCor(x = "t1_3038553", y = "age_at_first_visit", 
+#' keep_procedure = 40483096, keep_observation = 201826)
 #' }
 #' @import DSOpal opalr httr DSI dsBaseClient dsSwissKnifeClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaGetCor <- function(x, y, 
+dshSophiaGetCor <- function(dataframe = "baseline",
+                            x, y, 
                             method = "pearson",
-                            dataframe = "baseline",
                             keep_procedure = NA, remove_procedure = NA,
                             keep_observation = NA, remove_observation = NA, 
                             reverse_x = FALSE, reverse_y = FALSE) {

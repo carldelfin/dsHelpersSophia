@@ -2,26 +2,50 @@
 % Please edit documentation in R/dshSophiaGetBeta.R
 \name{dshSophiaGetBeta}
 \alias{dshSophiaGetBeta}
-\title{Merge a (longitudinal) measurement table variable with the federated 'baseline' data frame}
+\title{Estimate the linear association between two continuous variables}
 \usage{
 dshSophiaGetBeta(
+  dataframe = "baseline",
   outcome,
-  pred,
+  predictor,
   covariate = NA,
   keep_procedure = NA,
   remove_procedure = NA,
   keep_observation = NA,
   remove_observation = NA,
   standardize_all = FALSE,
-  standardize_pred = TRUE,
+  standardize_predictor = TRUE,
   reverse_outcome = FALSE
 )
 }
+\arguments{
+\item{dataframe}{A character, the name of the federated data frame holding \code{outcome} and \code{predictor}. Defaults to \code{baseline}.}
+
+\item{outcome}{A character, must correspond to a numerical column in the federated data frame.}
+
+\item{predictor}{A character, must correspond to a numerical column in the federated data frame.}
+
+\item{covariate}{A character or a vector of characters, corresponding column names to use as covariates. Defaults to \code{NA}.}
+
+\item{keep_procedure}{A numeric, must be a valid Concept ID for a \code{has_} column created using \code{dshSophiaCreateBaseline}. Will only keep rows with this procedure. Defaults to \code{NA}.}
+
+\item{remove_procedure}{A numeric, must be a valid Concept ID for a \code{has_} column created using \code{dshSophiaCreateBaseline}. Will remove all rows with this procedure. Defaults to \code{NA}.}
+
+\item{keep_observation}{A numeric, must be a valid Concept ID for a \code{has_} column created using \code{dshSophiaCreateBaseline}. Will only keep rows with this observation. Defaults to \code{NA}.}
+
+\item{remove_observation}{A numeric, must be a valid Concept ID for \code{has_} column created using \code{dshSophiaCreateBaseline}. Will remove all rows with this observation. Defaults to \code{NA}.}
+
+\item{standardize_all}{A Boolean, setting to \code{TRUE} will center and scale all numeric columns (\code{outcome}, \code{predictor}, any variables supplied to \code{covariate}). Defaults to \code{FALSE}.}
+
+\item{standardize_predictor}{A Boolean, setting to \code{TRUE} will center and scale \code{predictor}. Defaults to \code{FALSE}.}
+
+\item{reverse_outcome}{A Boolean, setting to \code{TRUE} will reverse the \code{outcome} column. Defaults to \code{FALSE}.}
+}
 \value{
-Nothing, the federated 'baseline' data frame is appended.
+A data frame with the estimated linear association (beta value) and associated metrics. If privacy checks are not passed, a data frame with NAs will be returned.
 }
 \description{
-Given a valid measurement table Concept ID, the function merges that variable (in wide format) with the 'baseline' data frame on the federated node. Note that the 'baseline' data frame must already exist. If the variable is available across several time points, all time points are included, and the raw difference plus percentage change from time point 1 to timepoint X is calculated.
+Given the names of two numeric columns in a federated data frame, estimates their linear association and returns the beta value and associated metrics. Several checks are performed to make sure the function does not violate privacy rules. The user has the option to subset data by procedure and observation prior to estimating the association, as well as standardizing all data or only the outcome. The outcome may also be reversed, which is useful when negative values are considered 'good', such as percent weight loss.
 }
 \examples{
 \dontrun{

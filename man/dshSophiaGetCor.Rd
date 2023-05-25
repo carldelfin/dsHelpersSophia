@@ -5,10 +5,10 @@
 \title{Get the correlation between two continuous variables}
 \usage{
 dshSophiaGetCor(
+  dataframe = "baseline",
   x,
   y,
   method = "pearson",
-  dataframe = "baseline",
   keep_procedure = NA,
   remove_procedure = NA,
   keep_observation = NA,
@@ -18,13 +18,13 @@ dshSophiaGetCor(
 )
 }
 \arguments{
-\item{x}{A character, must correspond to the name of a numerical column in 'baseline'.}
+\item{dataframe}{A character, the name of the federated data frame holding \code{x} and \code{y}. Defaults to \code{baseline}.}
 
-\item{y}{A character, must correspond to the name of a numerical column in 'baseline'.}
+\item{x}{A character, must correspond to a numerical column in the federated data frame.}
+
+\item{y}{A character, must correspond to a numerical column in the federated data frame.}
 
 \item{method}{A character, specifying the type of correlation. Currently only \code{pearson} is allowed and is thus default.}
-
-\item{dataframe}{A character, the name of the federated data frame holding x and y. Defaults to \code{baseline}.}
 
 \item{keep_procedure}{A numeric, must be a valid Concept ID for a \code{has_} column created using \code{dshSophiaCreateBaseline}. Will only keep rows with this procedure. Defaults to \code{NA}.}
 
@@ -34,15 +34,15 @@ dshSophiaGetCor(
 
 \item{remove_observation}{A numeric, must be a valid Concept ID for \code{has_} column created using \code{dshSophiaCreateBaseline}. Will remove all rows with this observation. Defaults to \code{NA}.}
 
-\item{reverse_x}{A Boolean, set to \code{TRUE} if x should be reversed. Defaults to \code{FALSE}.}
+\item{reverse_x}{A Boolean, setting to \code{TRUE} will reverse the \code{x} column. Defaults to \code{FALSE}.}
 
-\item{reverse_y}{A Boolean, set to \code{TRUE} if y should be reversed. Defaults to \code{FALSE}.}
+\item{reverse_y}{A Boolean, setting to \code{TRUE} will reverse the \code{y} column. Defaults to \code{FALSE}.}
 }
 \value{
 A data frame with the estimated correlation and associated metrics. If privacy checks are not passed, a data frame with NAs will be returned.
 }
 \description{
-Given the names of two numeric columns in 'baseline', calculates and returns the Pearson correlation and associated metrics. Several checks are performed to make sure the function does not violate privacy rules. The user has the option to subset data by procedure and observation prior to estimating the correlation. The variables may also be reversed, which is useful when negative values are considered 'good', such as percent weight loss.
+Given the names of two numeric columns in a federated data frame, calculates and returns the Pearson correlation and associated metrics. Several checks are performed to make sure the function does not violate privacy rules. The user has the option to subset data by procedure and observation prior to estimating the correlation. The variables may also be reversed, which is useful when negative values are considered 'good', such as percent weight loss.
 }
 \examples{
 \dontrun{
@@ -53,13 +53,18 @@ dshSophiaConnect(include = "abos")
 dshSophiaLoad()
 
 # create a 'baseline' data frame on the federated node, 
-calculate age at first visit and include 'bypass of stomach' procedure and 'type 2 diabetes' observation
-dshSophiaCreateBaseline(age_at_first = "visit", procedure_id = 40483096, observation_id = 201826)
+# calculate age at first visit and include 
+# 'bypass of stomach' procedure and 'type 2 diabetes' observation
+dshSophiaCreateBaseline(age_at_first = "visit",
+procedure_id = 40483096,
+observation_id = 201826)
    
 # add longitudinal weight measures
 dshSophiaMergeLongMeas(concept_id = 3038553)
 
-# get correlation between age and weight for subgroup with bypass and T2D
-dshSophiaGetCor(x = "t1_3038553", y = "age_at_first_visit", keep_procedure = 40483096, keep_observation = 201826)
+# get correlation between age and weight
+#for subgroup with bypass and T2D
+dshSophiaGetCor(x = "t1_3038553", y = "age_at_first_visit", 
+keep_procedure = 40483096, keep_observation = 201826)
 }
 }
