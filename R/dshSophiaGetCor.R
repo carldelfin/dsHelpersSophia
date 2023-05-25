@@ -5,10 +5,10 @@
 #' @param y A character, must correspond to the name of a numerical column in 'baseline'.
 #' @param method A character, specifying the type of correlation. Currently only `pearson` is allowed and is thus default. 
 #' @param dataframe A character, the name of the federated data frame holding x and y. Defaults to `baseline`.
-#' @param keep_procedure A numeric, must be a valid Concept ID for a procedure column created using `dshSophiaCreateBaseline`. Will only keep rows with this procedure. Defaults to `NA`.
-#' @param remove_procedure A numeric, must be a valid Concept ID for a procedure column created using `dshSophiaCreateBaseline`. Will remove all rows with this procedure. Defaults to `NA`.
-#' @param keep_observation A numeric, must be a valid Concept ID for an observation column created using `dshSophiaCreateBaseline`. Will only keep rows with this observation. Defaults to `NA`.
-#' @param remove_observation A numeric, must be a valid Concept ID for an observation column created using `dshSophiaCreateBaseline`. Will remove all rows with this observation. Defaults to `NA`.
+#' @param keep_procedure A numeric, must be a valid Concept ID for a `has_` column created using `dshSophiaCreateBaseline`. Will only keep rows with this procedure. Defaults to `NA`.
+#' @param remove_procedure A numeric, must be a valid Concept ID for a `has_` column created using `dshSophiaCreateBaseline`. Will remove all rows with this procedure. Defaults to `NA`.
+#' @param keep_observation A numeric, must be a valid Concept ID for a `has_` column created using `dshSophiaCreateBaseline`. Will only keep rows with this observation. Defaults to `NA`.
+#' @param remove_observation A numeric, must be a valid Concept ID for `has_` column created using `dshSophiaCreateBaseline`. Will remove all rows with this observation. Defaults to `NA`.
 #' @param reverse_x A Boolean, set to `TRUE` if x should be reversed. Defaults to `FALSE`.
 #' @param reverse_y A Boolean, set to `TRUE` if y should be reversed. Defaults to `FALSE`.
 #' @return A data frame with the estimated correlation and associated metrics. If privacy checks are not passed, a data frame with NAs will be returned.

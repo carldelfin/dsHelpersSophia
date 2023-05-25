@@ -1,52 +1,46 @@
 #' Create a baseline data frame on the federated node
 #'
-#' Given a vector of valid measurement table Concept IDs the function creates a 'baseline' data frame on the federated node. Here, 'baseline' means the first measurement available, and as such may be different for different Concept IDs. The function also creates an approximate 'age_baseline' variable and merged the baseline data with gender if available in the person table.
+#' Creates a 'baseline' data frame on the federated node(s). Here, 'baseline' simply means baseline characteristics such as gender, age, and various procedures and observations. The 'baseline' data frame can be used as a stepping stone for creating more elaborate data frames.
+#' @param name A character, the name of the resulting data frame. Defaults to `baseline`.
+#' @param procedure_id A numeric, must be a valid Concept ID in the Procedure table, that is coded as either present or not present. If supplied, will create a factor column named after the Concept ID, prefixed with `has_`. A value of 1 will mean that the procedure is present, and a value of 0 will mean that the procedure is not present or is missing. Defaults to `NULL`.
+#' @param observation_id A numeric, must be a valid Concept ID in the Observation table, that is coded as either present or not present. If supplied, will create a factor column named after the Concept ID, prefixed with `has_`. A value of 1 will mean that the observation is present, and a value of 0 will mean that the observation is not present or is missing. Defaults to `NULL`.
+#' @param age_at_first Either a character `visit` or a valid Concept ID from the Measurement table. If `visit` then age at first visit is calculated. If a Concept ID, then the age at first available measurement of that Concept ID is calculated. Cannot be used at the same time as `age_at_year`. Defaults to `NULL`.
+#' @param age_at_year A numeric, corresponding to a year (e.g. `2000`). The age at that specific year is calculated. Cannot be used at the same time as `age_at_first`. Defaults to `NULL`.
 #' @return A federated data frame named 'baseline'.
 #' @examples
 #' \dontrun{
 #' # connect to the federated system
-#' dshSophiaConnect()
+#' dshSophiaConnect(include = "abos")
 #'
 #' # load database resources
 #' dshSophiaLoad()
 #'
 #' # create a 'baseline' data frame on the federated node
-#' dshSophiaCreateBaseline(concept_id = c(3038553, 3025315, 37020574))
+#' dshSophiaCreateBaseline(procedure_id = c(3038553, 3025315, 37020574),
+#' observation_id = 201826, 
+#' age_at_first = "visit")
 #' 
 #' # check result
-#' dsBaseClient::ds.summary("baseline")
+#' dsBaseClient::ds.summary(name)
 #' }
 #' @import DSOpal opalr httr DSI dsQueryLibrary dsResource dsBaseClient dplyr
-#' @importFrom utils menu 
 #' @export
-dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, age_at_first = NULL, age_at_year = NULL) {
+dshSophiaCreateBaseline <- function(name = name,
+                                    procedure_id = NULL, 
+                                    observation_id = NULL, 
+                                    age_at_first = NULL, 
+                                    age_at_year = NULL) {
 
-    # ----------------------------------------------------------------------------------------------
-    # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
-    # the user probably did not run dshSophiaConnect() yet. Here the user may do so, after 
-    # being prompted for username and password.
-    # ----------------------------------------------------------------------------------------------
-    
     if (exists("opals") == FALSE || exists("nodes_and_cohorts") == FALSE) {
-        cat("")
-        cat("No 'opals' and/or 'nodes_and_cohorts' object found\n")
-        cat("You probably did not run 'dshSophiaConnect' yet, do you wish to do that now?\n")
-        switch(menu(c("Yes", "No (abort)")) + 1,
-               cat("Test"), 
-               dshSophiaPrompt(),
-               stop("Aborting..."))
+        stop("\nNo 'opals' and/or 'nodes_and_cohorts' object found\nYou probably did not run 'dshSophiaConnect' yet")
+    }
+   
+    if (!is.null(age_at_year) & !is.null(age_at_first)) {
+        stop("\n'age_at_year' and 'age_at_first' cannot both be used")
     }
     
-    # --------------------------------------------------------------------------------------------------
-    # get year of birth and gender from person table
-    # --------------------------------------------------------------------------------------------------
-    
-    cat("\n")
-    cat("Creating baseline data frame")
-    cat("\n\n")
-    
     # load person table
-    dsQueryLibrary::dsqLoad(symbol = "baseline",
+    dsQueryLibrary::dsqLoad(symbol = name,
                             domain = "concept_name",
                             query_name = "person",
                             union = TRUE,
@@ -54,8 +48,8 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
                             async = TRUE)
     
     # keep only columns we need
-    dsSwissKnifeClient::dssSubset("baseline",
-                                  "baseline",
+    dsSwissKnifeClient::dssSubset(name,
+                                  name,
                                   col.filter = "colnames(baseline) %in% c('person_id', 'gender', 'year_of_birth', 'birth_datetime')",
                                   datasources = opals)
     
@@ -82,7 +76,7 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
                                           datasources = opals)
             
             # join into temporary data frame 'tmp'
-            dsSwissKnifeClient::dssJoin(c("p", "baseline"),
+            dsSwissKnifeClient::dssJoin(c("p", name),
                                         symbol = "tmp",
                                         by = "person_id",
                                         join.type = "full",
@@ -104,9 +98,9 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
                                           col.filter = paste0("c('person_id', 'has_", i, "')"),
                                           datasources = opals)
             
-            # merge with 'baseline'
-            dsSwissKnifeClient::dssJoin(c("tmp", "baseline"),
-                                        symbol = "baseline",
+            # merge with 'name'
+            dsSwissKnifeClient::dssJoin(c("tmp", name),
+                                        symbol = name,
                                         by = "person_id",
                                         join.type = "full",
                                         datasources = opals)
@@ -120,7 +114,6 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
         for (i in observation_id) {
             
             o_clause <- paste0("observation_concept_id in ('", i, "')")
-
             connection_name <- gsub("\\.", "_", DSI::datashield.resources(opals)[[1]])
 
             dsResource::dsrAssign(symbol = "o",
@@ -150,7 +143,7 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
 
             
             # join into temporary data frame 'tmp'
-            dsSwissKnifeClient::dssJoin(c("o", "baseline"),
+            dsSwissKnifeClient::dssJoin(c("o", name),
                                         symbol = "tmp",
                                         by = "person_id",
                                         join.type = "full",
@@ -172,9 +165,8 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
                                           col.filter = paste0("c('person_id', 'has_", i, "')"),
                                           datasources = opals)
             
-            # merge with 'baseline'
-            dsSwissKnifeClient::dssJoin(c("tmp", "baseline"),
-                                        symbol = "baseline",
+            dsSwissKnifeClient::dssJoin(c("tmp", name),
+                                        symbol = name,
                                         by = "person_id",
                                         join.type = "full",
                                         datasources = opals)
@@ -213,18 +205,18 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
                                          async = TRUE,
                                          datasources = opals)
             
-            dsSwissKnifeClient::dssJoin(c("v", "baseline"),
-                                        symbol = "baseline",
+            dsSwissKnifeClient::dssJoin(c("v", name),
+                                        symbol = name,
                                         by = "person_id",
                                         join.type = "full",
                                         datasources = opals)
             
-            dsSwissKnifeClient::dssDeriveColumn("baseline", 
+            dsSwissKnifeClient::dssDeriveColumn(name, 
                                                 "age_at_first_visit", 
                                                 "round((f.irst_visit_dat.e - as.numeric(as.Date(year_of_birth, origin = '1970-01-01'))) / 365)")
             
-            dsSwissKnifeClient::dssSubset("baseline",
-                                          "baseline",
+            dsSwissKnifeClient::dssSubset(name,
+                                          name,
                                           col.filter = "!colnames(baseline) %in% c('f.irst_visit_dat.e', 'year_of_birth', 'birth_datetime')", 
                                           datasources = opals)
             
@@ -270,18 +262,18 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
                                           row.filter = paste0("ma$f.irst_measurement_dat.e > 0"),
                                           datasources = opals)
             
-            dsSwissKnifeClient::dssJoin(c("ma", "baseline"),
-                                        symbol = "baseline",
+            dsSwissKnifeClient::dssJoin(c("ma", name),
+                                        symbol = name,
                                         by = "person_id",
                                         join.type = "full",
                                         datasources = opals)
             
-            dsSwissKnifeClient::dssDeriveColumn("baseline", 
+            dsSwissKnifeClient::dssDeriveColumn(name, 
                                                 paste0("age_at_first_", age_at_first), 
                                                 "round((f.irst_measurement_dat.e - as.numeric(as.Date(year_of_birth, origin = '1970-01-01'))) / 365)")
             
-            dsSwissKnifeClient::dssSubset("baseline",
-                                          "baseline",
+            dsSwissKnifeClient::dssSubset(name,
+                                          name,
                                           col.filter = "colnames(baseline) != 'f.irst_measurement_dat.e'",
                                           datasources = opals)
             
@@ -290,9 +282,9 @@ dshSophiaCreateBaseline <- function(procedure_id = NULL, observation_id = NULL, 
         }
     }
     
-    if (!is.null(age_at_year)) {
+    if (!is.null(age_at_year) | is.null(age_at_first)) {
            
-        dsSwissKnifeClient::dssDeriveColumn("baseline", 
+        dsSwissKnifeClient::dssDeriveColumn(name, 
                                             paste0("age_at_year_", age_at_year), 
                                             paste0(age_at_year, " - year_of_birth"))
 

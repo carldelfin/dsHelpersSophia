@@ -1,11 +1,12 @@
-#' Connect to SOPHIA nodes 
+#' Connect to SOPHIA federated nodes 
 #'
-#' Allows the user to connect to the SOPHIA federated database, with the option of including and excluding specific nodes (a node in this context is a server that hosts a database). Note that connecting to the federated database is a two-step process: First, the user connects to each individual node in order to retrieve a list of all cohorts that are hosted on that specific node (cohorts in this context refer to a specific dataset associated with a study or research project). Then, the user is disconnected and reconnected to each individual cohort.
+#' Allows the user to connect to SOPHIA federated database nodes, with the option of including and excluding specific nodes (a node in this context is a server that hosts a database). Note that connecting to the federated database is a two-step process: First, the user connects to each individual node in order to retrieve a list of all cohorts that are hosted on that specific node (cohorts in this context refer to a specific dataset associated with a study or research project). Then, the user is disconnected and reconnected to each individual cohort.
 #' @param username A character; your username. Defaults to `Sys.getenv("fdb_user")`.
 #' @param password A character; your password. Defaults to `Sys.getenv("fdb_password")`.
-#' @param include A character or vector of characters containing only the nodes you want to connect to. 
-#' @param error A character; either `exclude` (default) or `include` (optional). If `exclude`, any nodes with an error will not be connected to. The user will notified if this is the case. If `include`, a connection attempt will be made, but is unlikely to succedd.
-#' @param exclude A character or vector of characters containing only the nodes you do not want to connect to.
+#' @param include A character or vector of characters containing only the nodes you want to connect to. Defaults to `NULL`.
+#' @param exclude A character or vector of characters containing only the nodes you do not want to connect to. Defaults to `NULL`.
+#' @param append_name A character, appending the node name, useful when using multiple concurrent sessions. Defaults to `NULL`.
+#' @param restore A character, the name of a saved workspace on the node. See `DSI::datashield.workspaces` and related functions. Defaults to `NULL`.
 #' @return An Opals object (`opals`) is assigned to the Global environment.
 #' @examples
 #' \dontrun{
@@ -40,7 +41,7 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
     error_nodes <- subset(available_nodes, error_code == 1)
     available_nodes <- subset(available_nodes, error_code == 0)
         
-    # let user know which nodes were exluded, if any
+    # let user know which nodes were excluded, if any
     if (nrow(error_nodes) != 0) {
         cat("\nNOTE! The following node(s) will be exluded due to connection errors:\n")
         cat(error_nodes$node_name, "\n")
@@ -83,7 +84,7 @@ dshSophiaConnect <- function(username = Sys.getenv("fdb_user"),
         return(projects[[x]][!(projects[[x]]$name %in% c("sophia", "omop_test", "a_test", "big_db_test")), , drop = FALSE])
     }, simplify = FALSE)
 
-    # create a dataframe in long format with all cohorts (projects)
+    # create a data frame in long format with all cohorts (projects)
     # corresponding to each node; note that this is assigned to the 
     # global environment for use by `dshSophiaLoad()`
     nodes_and_cohorts <- do.call("rbind", projects)[, c(1, 4:5)]
