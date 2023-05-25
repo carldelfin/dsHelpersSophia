@@ -2,7 +2,7 @@
 % Please edit documentation in R/dshSophiaConnect.R
 \name{dshSophiaConnect}
 \alias{dshSophiaConnect}
-\title{Connect to SOPHIA nodes}
+\title{Connect to SOPHIA federated nodes}
 \usage{
 dshSophiaConnect(
   username = Sys.getenv("fdb_user"),
@@ -18,17 +18,19 @@ dshSophiaConnect(
 
 \item{password}{A character; your password. Defaults to \code{Sys.getenv("fdb_password")}.}
 
-\item{include}{A character or vector of characters containing only the nodes you want to connect to.}
+\item{include}{A character or vector of characters containing only the nodes you want to connect to. Defaults to \code{NULL}.}
 
-\item{exclude}{A character or vector of characters containing only the nodes you do not want to connect to.}
+\item{exclude}{A character or vector of characters containing only the nodes you do not want to connect to. Defaults to \code{NULL}.}
 
-\item{error}{A character; either \code{exclude} (default) or \code{include} (optional). If \code{exclude}, any nodes with an error will not be connected to. The user will notified if this is the case. If \code{include}, a connection attempt will be made, but is unlikely to succedd.}
+\item{append_name}{A character, appending the node name, useful when using multiple concurrent sessions. Defaults to \code{NULL}.}
+
+\item{restore}{A character, the name of a saved workspace on the node. See \code{DSI::datashield.workspaces} and related functions. Defaults to \code{NULL}.}
 }
 \value{
 An Opals object (\code{opals}) is assigned to the Global environment.
 }
 \description{
-Allows the user to connect to the SOPHIA federated database, with the option of including and excluding specific nodes (a node in this context is a server that hosts a database). Note that connecting to the federated database is a two-step process: First, the user connects to each individual node in order to retrieve a list of all cohorts that are hosted on that specific node (cohorts in this context refer to a specific dataset associated with a study or research project). Then, the user is disconnected and reconnected to each individual cohort.
+Allows the user to connect to SOPHIA federated database nodes, with the option of including and excluding specific nodes (a node in this context is a server that hosts a database). Note that connecting to the federated database is a two-step process: First, the user connects to each individual node in order to retrieve a list of all cohorts that are hosted on that specific node (cohorts in this context refer to a specific dataset associated with a study or research project). Then, the user is disconnected and reconnected to each individual cohort.
 }
 \examples{
 \dontrun{

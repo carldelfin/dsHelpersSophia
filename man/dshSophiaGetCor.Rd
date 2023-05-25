@@ -8,6 +8,7 @@ dshSophiaGetCor(
   x,
   y,
   method = "pearson",
+  dataframe = "baseline",
   keep_procedure = NA,
   remove_procedure = NA,
   keep_observation = NA,
@@ -21,19 +22,21 @@ dshSophiaGetCor(
 
 \item{y}{A character, must correspond to the name of a numerical column in 'baseline'.}
 
-\item{method}{A character, specifying the type of correlation. Currently only 'pearson' is allowed and is thus default.}
+\item{method}{A character, specifying the type of correlation. Currently only \code{pearson} is allowed and is thus default.}
 
-\item{keep_procedure}{A numeric, must be a valid Concept ID for a procedure column created using 'dshSophiaCreateBaseline'. Will only keep rows with this procedure. Defaults to NA.}
+\item{dataframe}{A character, the name of the federated data frame holding x and y. Defaults to \code{baseline}.}
 
-\item{remove_procedure}{A numeric, must be a valid Concept ID for a procedure column created using 'dshSophiaCreateBaseline'. Will remove all rows with this procedure. Defaults to NA.}
+\item{keep_procedure}{A numeric, must be a valid Concept ID for a \code{has_} column created using \code{dshSophiaCreateBaseline}. Will only keep rows with this procedure. Defaults to \code{NA}.}
 
-\item{keep_observation}{A numeric, must be a valid Concept ID for an observation column created using 'dshSophiaCreateBaseline'. Will only keep rows with this observation. Defaults to NA.}
+\item{remove_procedure}{A numeric, must be a valid Concept ID for a \code{has_} column created using \code{dshSophiaCreateBaseline}. Will remove all rows with this procedure. Defaults to \code{NA}.}
 
-\item{remove_observation}{A numeric, must be a valid Concept ID for an observation column created using 'dshSophiaCreateBaseline'. Will remove all rows with this observation. Defaults to NA.}
+\item{keep_observation}{A numeric, must be a valid Concept ID for a \code{has_} column created using \code{dshSophiaCreateBaseline}. Will only keep rows with this observation. Defaults to \code{NA}.}
 
-\item{reverse_x}{A Boolean, set to TRUE if x should be reversed. Defaults to FALSE.}
+\item{remove_observation}{A numeric, must be a valid Concept ID for \code{has_} column created using \code{dshSophiaCreateBaseline}. Will remove all rows with this observation. Defaults to \code{NA}.}
 
-\item{reverse_y}{A Boolean, set to TRUE if y should be reversed. Defaults to FALSE.}
+\item{reverse_x}{A Boolean, set to \code{TRUE} if x should be reversed. Defaults to \code{FALSE}.}
+
+\item{reverse_y}{A Boolean, set to \code{TRUE} if y should be reversed. Defaults to \code{FALSE}.}
 }
 \value{
 A data frame with the estimated correlation and associated metrics. If privacy checks are not passed, a data frame with NAs will be returned.

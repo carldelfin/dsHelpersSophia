@@ -2,7 +2,7 @@
 % Please edit documentation in R/dshSophiaLoad.R
 \name{dshSophiaLoad}
 \alias{dshSophiaLoad}
-\title{Load database resources}
+\title{Load SOPHIA federated database resources}
 \usage{
 dshSophiaLoad()
 }
@@ -15,7 +15,7 @@ Loads all database resources on federated nodes.
 \examples{
 \dontrun{
 # connect to the federated system
-dshSophiaConnect()
+dshSophiaConnect(include = "abos")
 
 # load database resources
 dshSophiaLoad()

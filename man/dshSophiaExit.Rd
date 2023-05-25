@@ -2,7 +2,7 @@
 % Please edit documentation in R/dshSophiaExit.R
 \name{dshSophiaExit}
 \alias{dshSophiaExit}
-\title{Logout from the federated database}
+\title{Log out from the SOPHIA federated database}
 \usage{
 dshSophiaExit()
 }
@@ -10,7 +10,7 @@ dshSophiaExit()
 Nothing, the user is logged out.
 }
 \description{
-Wrapper around DSI::datashield.logout(opals) that logs the user out from the federated system.
+Wrapper around \code{DSI::datashield.logout} that logs the user out from the federated system.
 }
 \examples{
 \dontrun{

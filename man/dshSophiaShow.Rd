@@ -2,7 +2,7 @@
 % Please edit documentation in R/dshSophiaShow.R
 \name{dshSophiaShow}
 \alias{dshSophiaShow}
-\title{Show available nodes and cohorts}
+\title{Show available nodes and cohorts in the SOPHIA federated database}
 \usage{
 dshSophiaShow(
   username = Sys.getenv("fdb_user"),
@@ -14,14 +14,14 @@ dshSophiaShow(
 \item{username}{A character, your username. Defaults to \code{Sys.getenv("fdb_user")}.}
 
 \item{password}{A character, your password. Defaults to \code{Sys.getenv("fdb_password")}.}
+
+\item{error}{A character, currently only accepting the value \code{exclude} (the default). If supplied, will exclude any cohorts with connection errors.}
 }
 \value{
-A data frame with all available nodes and cohorts in 'long' format, along with date if creation and last update.
+A data frame with all available nodes and cohorts in 'long' format, along with dates of creation and last update.
 }
 \description{
-Downloads an up-to-date .csv file from SIB containing node status and URL, then
-via a two-step process logs in to each node to retrieve cohort names. The output
-is a dataframe containing all available nodes and cohorts.
+Downloads an up-to-date .csv file from SIB containing node status and URL, then via a two-step process logs in to each node to retrieve cohort names. The output is a data frame containing all available nodes and cohorts. Beware that if you are connected to and working on the federated database, running this function will interfere with that connection.
 }
 \examples{
 \dontrun{

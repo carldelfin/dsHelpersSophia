@@ -2,7 +2,7 @@
 % Please edit documentation in R/dshSophiaOverview.R
 \name{dshSophiaOverview}
 \alias{dshSophiaOverview}
-\title{Get an overview of available data}
+\title{Get an overview of available data in the SOPHIA federated database}
 \usage{
 dshSophiaOverview()
 }

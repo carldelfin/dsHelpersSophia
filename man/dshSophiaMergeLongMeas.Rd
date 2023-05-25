@@ -2,9 +2,10 @@
 % Please edit documentation in R/dshSophiaMergeLongMeas.R
 \name{dshSophiaMergeLongMeas}
 \alias{dshSophiaMergeLongMeas}
-\title{Merge a (longitudinal) measurement table variable with the federated 'baseline' data frame}
+\title{Merge a (longitudinal) variable from the Measurement table with an existing federated data frame}
 \usage{
 dshSophiaMergeLongMeas(
+  dataframe = "baseline",
   concept_id,
   change = TRUE,
   days = TRUE,
@@ -14,16 +15,33 @@ dshSophiaMergeLongMeas(
   outlier_iqr = NULL
 )
 }
+\arguments{
+\item{dataframe}{A character, the name of the data frame holding the data. Defaults to \code{baseline}.}
+
+\item{concept_id}{A numeric, must be a valid Concept ID from the Measurement table. The resulting variable will named after the Concept ID and prefixed with \code{tx_}, with \code{x} referring to timepoint (e.g., baseline measurements will be named \code{t1_xxxxxx}).}
+
+\item{change}{A Boolean, if \code{TRUE} (the default) and multiple timepoints are available, raw and percentage change between timepoints will be calculated.}
+
+\item{days}{A Boolean, if \code{TRUE} (the default) and multiple timepoints are available, the number of days between \code{t1} and \code{tx} will be calculated.}
+
+\item{limit_time}{A numeric, can be used to constrain variables measured across multiple timepoints to a specific number of timepoints (e.g. if \code{1}, only the first timepoint will be included). Defaults to \code{NULL} such that all available timepoints are included.}
+
+\item{unit}{A Boolean, if \code{TRUE} (the default) the unit used for the variable is extracted.}
+
+\item{outlier_sd}{A numeric, if supplied removes all rows where the variable value is \code{outlier_sd} times the standard deviation from the mean (e.g. if \code{2}, all rows with a value above or below 2 times the standard deviation from the mean are removed). Defaults to \code{NULL}.}
+
+\item{outlier_iqr}{A numeric, if supplied removes all rows where the variable value is \code{outlier_iqr} times the interquartile range from the mean (e.g. if \code{2}, all rows with a value above or below 2 times the interquartile range from the mean are removed). Defaults to \code{NULL}.}
+}
 \value{
-Nothing, the federated 'baseline' data frame is appended.
+Nothing, the federated data frame is appended.
 }
 \description{
-Given a valid measurement table Concept ID, the function merges that variable (in wide format) with the 'baseline' data frame on the federated node. Note that the 'baseline' data frame must already exist. If the variable is available across several time points, all time points are included, and the raw difference plus percentage change from time point 1 to timepoint X is calculated.
+Given a valid Measurement table Concept ID, merges that variable (in wide format) with an existing data frame on the federated node. If the variable is available across multiple time points, all time points may be included, and the raw difference plus percentage change from time point 1 to time point X can be calculated, along with the number of days since baseline. Units can also be extracted, and outliers can be removed prior to merging.
 }
 \examples{
 \dontrun{
 # connect to the federated system
-dshSophiaConnect()
+dshSophiaConnect(include )
 
 # load database resources
 dshSophiaLoad()
@@ -35,6 +53,6 @@ dshSophiaCreateBaseline(concept_id = c(4111665, 3004410, 3001308))
 dshSophiaMergeLongMeas(concept_id = 3038553)
 
 # check result
-dsBaseClient::ds.summary("baseline")
+dsBaseClient::ds.summary(dataframe)
 }
 }
