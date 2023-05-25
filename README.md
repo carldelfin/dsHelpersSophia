@@ -39,6 +39,8 @@ Several additional R packages are installed via dependencies. The following are 
 * [dshSophiaMeasureDesc](https://github.com/carldelfin/dsHelpersSophia#dshsophiameasuredesc)
 * [dshSophiaCreateBaseline](https://github.com/carldelfin/dsHelpersSophia#dshsophiacreatebaseline)
 * [dshSophiaMergeLongMeas](https://github.com/carldelfin/dsHelpersSophia#dshsophiamergelongmeas)
+* [dshSophiaGetBeta](https://github.com/carldelfin/dsHelpersSophia#dshsophiagetbeta)
+* [dshSophiaGetCor](https://github.com/carldelfin/dsHelpersSophia#dshsophiagetcor)
 
 ### Login credentials
 
@@ -184,3 +186,7 @@ dshSophiaMergeLongMeas(concept_id = 3038553)
 # check result
 dsBaseClient::ds.summary("baseline")
 ```
+
+### dshSophiaGetBeta
+
+### dshSophiaGetCor
