@@ -1,11 +1,19 @@
-#' Merge a (longitudinal) measurement table variable with the federated 'baseline' data frame
+#' Merge a (longitudinal) variable from the Measurement table with an existing federated data frame
 #'
-#' Given a valid measurement table Concept ID, the function merges that variable (in wide format) with the 'baseline' data frame on the federated node. Note that the 'baseline' data frame must already exist. If the variable is available across several time points, all time points are included, and the raw difference plus percentage change from time point 1 to timepoint X is calculated.
-#' @return Nothing, the federated 'baseline' data frame is appended.
+#' Given a valid Measurement table Concept ID, merges that variable (in wide format) with an existing data frame on the federated node. If the variable is available across multiple time points, all time points may be included, and the raw difference plus percentage change from time point 1 to time point X can be calculated, along with the number of days since baseline. Units can also be extracted, and outliers can be removed prior to merging.
+#' @param dataframe A character, the name of the data frame holding the data. Defaults to `baseline`.
+#' @param concept_id A numeric, must be a valid Concept ID from the Measurement table. The resulting variable will named after the Concept ID and prefixed with `tx_`, with `x` referring to timepoint (e.g., baseline measurements will be named `t1_xxxxxx`).
+#' @param change A Boolean, if `TRUE` (the default) and multiple timepoints are available, raw and percentage change between timepoints will be calculated. 
+#' @param days A Boolean, if `TRUE` (the default) and multiple timepoints are available, the number of days between `t1` and `tx` will be calculated. 
+#' @param limit_time A numeric, can be used to constrain variables measured across multiple timepoints to a specific number of timepoints (e.g. if `1`, only the first timepoint will be included). Defaults to `NULL` such that all available timepoints are included.
+#' @param unit A Boolean, if `TRUE` (the default) the unit used for the variable is extracted. 
+#' @param outlier_sd A numeric, if supplied removes all rows where the variable value is `outlier_sd` times the standard deviation from the mean (e.g. if `2`, all rows with a value above or below 2 times the standard deviation from the mean are removed). Defaults to `NULL`.
+#' @param outlier_iqr A numeric, if supplied removes all rows where the variable value is `outlier_iqr` times the interquartile range from the mean (e.g. if `2`, all rows with a value above or below 2 times the interquartile range from the mean are removed). Defaults to `NULL`.
+#' @return Nothing, the federated data frame is appended.
 #' @examples
 #' \dontrun{
 #' # connect to the federated system
-#' dshSophiaConnect()
+#' dshSophiaConnect(include )
 #'
 #' # load database resources
 #' dshSophiaLoad()
@@ -17,17 +25,28 @@
 #' dshSophiaMergeLongMeas(concept_id = 3038553)
 #' 
 #' # check result
-#' dsBaseClient::ds.summary("baseline")
+#' dsBaseClient::ds.summary(dataframe)
 #' }
 #' @import DSOpal opalr httr DSI dsQueryLibrary dsBaseClient dsSwissKnifeClient dplyr
 #' @importFrom utils menu 
 #' @export
-dshSophiaMergeLongMeas <- function(concept_id, change = TRUE, days = TRUE, limit_time = NULL, unit = TRUE, outlier_sd = NULL, outlier_iqr = NULL) {
+dshSophiaMergeLongMeas <- function(dataframe = "baseline",
+                                   concept_id, 
+                                   change = TRUE, 
+                                   days = TRUE, 
+                                   limit_time = NULL, 
+                                   unit = TRUE, 
+                                   outlier_sd = NULL, 
+                                   outlier_iqr = NULL) {
     
     if (exists("opals") == FALSE || exists("nodes_and_cohorts") == FALSE) {
         stop("\nNo 'opals' or 'nodes_and_cohorts' object found! Did you forget to run 'dshSophiaConnect'?")
     }
     
+    if (!is.null(outlier_sd) && !is.null(outlier_iqr)) {
+        stop("Outlier removal using both SD and IQR not possible!")
+    }
+ 
     cat("\n\nMerging Concept ID:", concept_id, "\n\n")
     
     # make sure the user has specified a concept ID that can be loaded from the measurement table
@@ -50,11 +69,7 @@ dshSophiaMergeLongMeas <- function(concept_id, change = TRUE, days = TRUE, limit
         error = function(e) { 
             message("\nUnable to load measurement table, maybe the variable doesn't exist or you forgot to run 'dshSophiaLoad()'?")
         })
-
-    if (!is.null(outlier_sd) && !is.null(outlier_iqr)) {
-        stop("Outlier removal using both SD and IQR not possible!")
-    }
-    
+   
     # check how many time points we have
     dsSwissKnifeClient::dssPivot(symbol = "mw",
                                  what = "m",
@@ -124,9 +139,9 @@ dshSophiaMergeLongMeas <- function(concept_id, change = TRUE, days = TRUE, limit
 
     }
     
-    # merge with 'baseline'
-    dsSwissKnifeClient::dssJoin(c("baseline", "m_t1"),
-                                symbol = "baseline",
+    # merge with 'dataframe'
+    dsSwissKnifeClient::dssJoin(c(dataframe, "m_t1"),
+                                symbol = dataframe,
                                 by = "person_id",
                                 join.type = "left",
                                 datasources = opals)
@@ -212,7 +227,7 @@ dshSophiaMergeLongMeas <- function(concept_id, change = TRUE, days = TRUE, limit
                                              fun.aggregate = eval(parse(text = t_aggr)),
                                              datasources = opals)
 
-                # subset to ids in m_tmp
+                # subset to IDs in m_tmp
                 dsSwissKnifeClient::dssSubset("tdiff",
                                               "tdiff",
                                               row.filter = 'tdiff$person_id %in% m_tmp$person_id',
@@ -256,8 +271,8 @@ dshSophiaMergeLongMeas <- function(concept_id, change = TRUE, days = TRUE, limit
             }
 
             # merge
-            dsSwissKnifeClient::dssJoin(c("baseline", "m_tmp"),
-                                        symbol = "baseline",
+            dsSwissKnifeClient::dssJoin(c(dataframe, "m_tmp"),
+                                        symbol = dataframe,
                                         by = "person_id",
                                         join.type = "left",
                                         datasources = opals)
@@ -267,7 +282,7 @@ dshSophiaMergeLongMeas <- function(concept_id, change = TRUE, days = TRUE, limit
             # calculate change?
             if (change == TRUE) {
                
-                dsSwissKnifeClient::dssDeriveColumn("baseline",
+                dsSwissKnifeClient::dssDeriveColumn(dataframe,
                                                     paste0(name3, "_pct_change_from_t1"),
                                                     paste0("((", 
                                                            name3,
@@ -278,13 +293,13 @@ dshSophiaMergeLongMeas <- function(concept_id, change = TRUE, days = TRUE, limit
                                                            ") * 100"),
                                                     datasources = opals)
                
-                dsSwissKnifeClient::dssDeriveColumn("baseline",
+                dsSwissKnifeClient::dssDeriveColumn(dataframe,
                                                     paste0(name3, "_raw_change_from_t1"), 
                                                     paste0(name3, " - ", gsub(paste0("t", i), "t1", name3)),
                                                     datasources = opals)
                 if (i > 2) {
 
-                    dsSwissKnifeClient::dssDeriveColumn("baseline",
+                    dsSwissKnifeClient::dssDeriveColumn(dataframe,
                                                         paste0(name3, "_pct_change_from_t", i - 1),
                                                         paste0("((", 
                                                                name3,
@@ -295,7 +310,7 @@ dshSophiaMergeLongMeas <- function(concept_id, change = TRUE, days = TRUE, limit
                                                                ") * 100"),
                                                         datasources = opals)
 
-                    dsSwissKnifeClient::dssDeriveColumn("baseline",
+                    dsSwissKnifeClient::dssDeriveColumn(dataframe,
                                                         paste0(name3, "_raw_change_from_t", i - 1), 
                                                         paste0(name3, " - ", gsub(paste0("t", i), paste0("t", i - 1), name3)),
                                                         datasources = opals)
@@ -318,9 +333,9 @@ dshSophiaMergeLongMeas <- function(concept_id, change = TRUE, days = TRUE, limit
         invisible(dsSwissKnifeClient::dssColNames("mu", 
                                                   value = c("person_id", paste0("unit_", name2))))
 
-        # merge with 'baseline'
-        dsSwissKnifeClient::dssJoin(c("baseline", "mu"),
-                                    symbol = "baseline",
+        # merge with 'dataframe'
+        dsSwissKnifeClient::dssJoin(c(dataframe, "mu"),
+                                    symbol = dataframe,
                                     by = "person_id",
                                     join.type = "left",
                                     datasources = opals)

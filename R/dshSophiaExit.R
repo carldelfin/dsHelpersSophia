@@ -1,6 +1,6 @@
-#' Logout from the federated database 
+#' Log out from the SOPHIA federated database 
 #'
-#' Wrapper around DSI::datashield.logout(opals) that logs the user out from the federated system. 
+#' Wrapper around `DSI::datashield.logout` that logs the user out from the federated system. 
 #' @return Nothing, the user is logged out. 
 #' @examples
 #' \dontrun{

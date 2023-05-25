@@ -1,11 +1,11 @@
-#' Load database resources 
+#' Load SOPHIA federated database resources 
 #'
 #' Loads all database resources on federated nodes. 
 #' @return Nothing, all databases are loaded locally on each federated node.
 #' @examples
 #' \dontrun{
 #' # connect to the federated system
-#' dshSophiaConnect()
+#' dshSophiaConnect(include = "abos")
 #'
 #' # load database resources
 #' dshSophiaLoad()
@@ -14,21 +14,11 @@
 #' @importFrom utils menu 
 #' @export
 dshSophiaLoad <- function() {
-
-    # if there is not an 'opals' or an 'nodes_and_cohorts' object in the Global environment,
-    # the user probably did not run dshSophiaConnect() yet. Here the user may do so, after 
-    # being promted for username and password.
+ 
     if (exists("opals") == FALSE || exists("nodes_and_cohorts") == FALSE) {
-        cat("")
-        cat("No 'opals' and/or 'nodes_and_cohorts' object found\n")
-        cat("You probably did not run 'dshSophiaConnect' yet, do you wish to do that now?\n")
-        switch(menu(c("Yes", "No (abort)")) + 1,
-               cat("Test"), 
-               dshSophiaPrompt(),
-               stop("Aborting..."))
+        stop("\nNo 'opals' or 'nodes_and_cohorts' object found! Did you forget to run 'dshSophiaConnect'?")
     }
-
-    # now connect to each cohort individually
+    
     for (i in 1:nrow(nodes_and_cohorts)) {
         
         skip_to_next <- FALSE

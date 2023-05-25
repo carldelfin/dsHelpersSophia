@@ -1,11 +1,10 @@
-#' Show available nodes and cohorts 
+#' Show available nodes and cohorts in the SOPHIA federated database
 #'
-#' Downloads an up-to-date .csv file from SIB containing node status and URL, then
-#' via a two-step process logs in to each node to retrieve cohort names. The output
-#' is a dataframe containing all available nodes and cohorts.
+#' Downloads an up-to-date .csv file from SIB containing node status and URL, then via a two-step process logs in to each node to retrieve cohort names. The output is a data frame containing all available nodes and cohorts. Beware that if you are connected to and working on the federated database, running this function will interfere with that connection.
 #' @param username A character, your username. Defaults to `Sys.getenv("fdb_user")`.
 #' @param password A character, your password. Defaults to `Sys.getenv("fdb_password")`.
-#' @return A data frame with all available nodes and cohorts in 'long' format, along with date if creation and last update.
+#' @param error A character, currently only accepting the value `exclude` (the default). If supplied, will exclude any cohorts with connection errors.  
+#' @return A data frame with all available nodes and cohorts in 'long' format, along with dates of creation and last update.
 #' @examples
 #' \dontrun{
 #' # show all nodes and cohorts, assuming username and password is specified in .Renviron:
@@ -62,9 +61,9 @@ dshSophiaShow <- function(username = Sys.getenv("fdb_user"),
         function(x) { return(projects[[x]][!(projects[[x]]$name %in% c("sophia", "omop_test", "a_test")), , drop = FALSE])
     }, simplify = FALSE)
 
-    # create a data frame in long format with all cohorts (projects)
-    # corresponding to each node; note that this is assigned to the 
-    # Global environment for use by `dshSophiaLoad()`
+    # create a data frame in long format with all cohorts (projects) corresponding to each node
+    # NOTE: 
+    # This is assigned to the Global environment for use by `dshSophiaLoad()`
     nodes_and_cohorts <<- do.call("rbind", projects)[, c(1, 4:5)]
     nodes_and_cohorts$node_name <- gsub("\\..*", "", rownames(nodes_and_cohorts))
 

@@ -1,4 +1,4 @@
-#' Create a baseline data frame on the federated node
+#' Create a baseline data frame on the federated node(s)
 #'
 #' Creates a 'baseline' data frame on the federated node(s). Here, 'baseline' simply means baseline characteristics such as gender, age, and various procedures and observations. The 'baseline' data frame can be used as a stepping stone for creating more elaborate data frames.
 #' @param name A character, the name of the resulting data frame. Defaults to `baseline`.
