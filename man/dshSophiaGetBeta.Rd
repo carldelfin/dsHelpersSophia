@@ -13,7 +13,8 @@ dshSophiaGetBeta(
   keep_observation = NA,
   remove_observation = NA,
   standardize_all = FALSE,
-  standardize_pred = TRUE
+  standardize_pred = TRUE,
+  reverse_outcome = FALSE
 )
 }
 \value{
